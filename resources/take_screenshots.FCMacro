@@ -1,0 +1,139 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /home/muez/scripts/guides/SDL2/project/resources/take_screenshots.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import FreeCAD
+# name		name_in_freecad
+# ctrl		Text
+# shift		Text001
+# alt		Text002
+# super		linux_logo4
+# A			Text004
+# B			Text005
+# .			.
+# .			.
+# Z			Text029
+
+# Gui.runCommand('Std_DlgMacroRecord',0)
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Body')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text')
+FreeCAD.getDocument('keys').getObject('Text').Placement = App.Placement(App.Vector(-19.5,-10,1),App.Rotation(App.Vector(0,0,1),0))
+
+FreeCAD.getDocument('keys').getObject('Text').Placement = App.Placement(App.Vector(-19.5,-10,10),App.Rotation(App.Vector(0,0,1),0))
+
+Gui.runCommand('Std_DrawStyle',5)
+output_dir="/home/muez/scripts/guides/SDL2/project/resources/"
+output_subdir="/home/muez/scripts/guides/SDL2/project/resources/letters/"
+
+# show the unpressed button(Body)
+Gui.Selection.addSelection('keys','Body')
+Gui.runCommand('Std_ToggleVisibility',0)#
+Gui.Selection.clearSelection()
+
+# show the ctrl text
+Gui.Selection.addSelection('keys','Text')
+Gui.runCommand('Std_ToggleVisibility',0)#
+Gui.activeDocument().activeView().saveImage('{}ctrl.png'.output_dir,900,675,'Black')
+Gui.runCommand('Std_ToggleVisibility',0)#
+Gui.Selection.clearSelection()
+
+allTexts =[001,003,004,005,006,007,008,009,010,011,012,013,014,015,016,017,018,019,020,021,022,023,024,025,026,027,028,029]
+mainTexts =[001,003]
+
+for num in mainTexts:
+	# show the ctrl text
+	Gui.Selection.addSelection('keys','Text{}'.format(num))
+	Gui.runCommand('Std_ToggleVisibility',0)#
+	match num:
+		case 001:
+			Gui.activeDocument().activeView().saveImage('{}shift.png'.output_dir,900,675,'Black')
+		case 003:
+			Gui.activeDocument().activeView().saveImage('{}alt.png'.output_dir,900,675,'Black')
+	Gui.runCommand('Std_ToggleVisibility',0)#
+	Gui.Selection.clearSelection()
+
+# making the super key unpressed
+Gui.Selection.addSelection('keys','Text')
+Gui.runCommand('Std_ToggleVisibility',0)#
+Gui.activeDocument().activeView().saveImage('{}ctrl.png'.output_dir,900,675,'Black')
+Gui.runCommand('Std_ToggleVisibility',0)#
+Gui.Selection.clearSelection()
+
+# the second loop for the pressed buttons
+for num in mainTexts:
+	# show the ctrl text
+	Gui.Selection.addSelection('keys','Text{}'.format(num))
+	Gui.runCommand('Std_ToggleVisibility',0)#
+	match num:
+		case 001:
+			Gui.activeDocument().activeView().saveImage('{}shift.png'.output_dir,900,675,'Black')
+		case 003:
+			Gui.activeDocument().activeView().saveImage('{}ctrl.png'.output_dir,900,675,'Black')
+	Gui.runCommand('Std_ToggleVisibility',0)#
+	Gui.Selection.clearSelection()
+### Begin command Std_ViewScreenShot
+# Gui.activeDocument().activeView().saveImage('/home/muez/scripts/guides/SDL2/project/resources/ctrl.png',900,675,'Black')
+### End command Std_ViewScreenShot
+# Gui.Selection.addSelection('keys','Text001')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text')
+### Begin command Std_ViewScreenShot
+# Gui.activeDocument().activeView().saveImage('/home/muez/scripts/guides/SDL2/project/resources/shift.png',900,675,'Black')
+### End command Std_ViewScreenShot
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text003')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text001')
+### Begin command Std_ViewScreenShot
+# Gui.activeDocument().activeView().saveImage('/home/muez/scripts/guides/SDL2/project/resources/alt.png',900,675,'Black')
+### End command Std_ViewScreenShot
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','linux_logo4')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text003')
+### Begin command Std_ViewScreenShot
+# Gui.activeDocument().activeView().saveImage('/home/muez/scripts/guides/SDL2/project/resources/super.png',900,675,'Black')
+### End command Std_ViewScreenShot
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Body')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','linux_logo4')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Body001')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text')
+FreeCAD.getDocument('keys').getObject('Text').Placement = App.Placement(App.Vector(-19.5,-10,8),App.Rotation(App.Vector(0,0,1),0))
+
+### Begin command Std_ViewScreenShot
+# Gui.activeDocument().activeView().saveImage('/home/muez/scripts/guides/SDL2/project/resources/ctrlP.png',900,675,'Black')
+### End command Std_ViewScreenShot
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text001')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text')
+### Begin command Std_ViewScreenShot
+# Gui.activeDocument().activeView().saveImage('/home/muez/scripts/guides/SDL2/project/resources/shiftP.png',900,675,'Black')
+### End command Std_ViewScreenShot
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text003')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text001')
+### Begin command Std_ViewScreenShot
+# Gui.activeDocument().activeView().saveImage('/home/muez/scripts/guides/SDL2/project/resources/altP.png',900,675,'Black')
+### End command Std_ViewScreenShot
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','linux_logo4')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text003')
+### Begin command Std_ViewScreenShot
+# Gui.activeDocument().activeView().saveImage('/home/muez/scripts/guides/SDL2/project/resources/superP.png',900,675,'Black')
+### End command Std_ViewScreenShot
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','linux_logo4')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('keys','Text004')
+### Begin command Std_ViewScreenShot
+# Gui.activeDocument().activeView().saveImage('/home/muez/scripts/guides/SDL2/project/resources/A.png',900,675,'Black')
+### End command Std_ViewScreenShot
+# Macro End: /home/muez/scripts/guides/SDL2/project/resources/take_screenshots.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++

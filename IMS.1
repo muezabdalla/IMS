@@ -1,0 +1,53 @@
+.TH MOUSE-SUN 1 MOUSE-SUN
+.SH NAME
+mouse-menu \- mouse monitoring software
+
+.SH DESCRIPTION
+.B mouse-sun is a software that show a mouse and show when you press a button on the mouse
+or scroll the mouse wheel
+.P
+
+.SH OPTIONS
+.TP
+.BI \-p " <num1> <num2>"
+the window will apear at position defined. num1 is the x cordinate(horizantally) and num2 is the y cordinate(vertical)
+for example "-p 10 0" will make the window apear 10 pexiles away from the left and 0 pixels away from the top
+you can use also words for example "-p right top" will make the window apear in the top right corner
+acceptable word are: left and right for num1 and top and buttom for num2
+.TP
+.BI \-s " <num1> <num2>"
+this defines the size of the key(for a single key). num1 is the length along x cordinate(horizantally)(the width)
+and num2 is the length along y cordinate(vertical)(the hieght)
+for example "-S 100 60" will make the key  width 100 and hieght 60 pixels away from the top
+
+note: if you want to define both the size and position then define the size first
+.TP
+.BI \-i " /path/to/file"
+this will make the program read from the file specified instead of the defualt(defualt is "/dev/input/event4")
+if the program does not detect any key press that means the mouse input file is differant for your system
+you can know the mouse input file by running "cat /dev/input/event5" and move the mouse if there is an output 
+that mean this is the right file else try another file
+.TP
+.BI \-b
+turn off the borders of the window
+.TP
+.BI \-c
+turn off the ctrl key
+.TP
+.BI \-f
+turn off the shift key
+.TP
+.BI \-t
+turn off the super key
+.TP
+.BI \-a
+turn off the alt key
+.TP
+.BI \-k
+turn off all the keyboard
+.TP
+.BI \-m
+turn off the mouse
+.TP
+.BI \-r " <num>"
+change the refresh time (the time between refresh in miliseconds)
