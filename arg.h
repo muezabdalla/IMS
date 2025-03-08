@@ -133,6 +133,10 @@ while (i < argc)
 		SHOW_MOUSE = false;
 		i++;
 
+	} else if (arg_current == "-T") {
+		TRANSPARENT_MODE = true;
+		i++;
+
 	} else if (arg_current == "-r") {
 		REFRESH_TIME = atoi(argv[i+1]);
 		if (REFRESH_TIME <= 0)

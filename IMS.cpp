@@ -18,14 +18,21 @@ int MOUSE_WIDTH =	90;
 int MOUSE_HIEGHT =	90;
 int REFRESH_TIME =	100;
 
-bool SHOW_CTRL =	true;
-bool SHOW_SHIFT =	true;
-bool SHOW_SUPER =	true;
-bool SHOW_ALT =		true;
-bool SHOW_LETTERS =	true;
-bool SHOW_BORDERS = true;
-bool SHOW_KEYBOARD =true;
-bool SHOW_MOUSE =	true;
+bool SHOW_CTRL =		true;
+bool SHOW_SHIFT =		true;
+bool SHOW_SUPER =		true;
+bool SHOW_ALT =			true;
+bool SHOW_LETTERS =		true;
+bool SHOW_BORDERS = 	true;
+bool SHOW_KEYBOARD =	true;
+bool SHOW_MOUSE =		true;
+bool TRANSPARENT_MODE =	false;
+
+// a boolean for each button if it is pressed and the mouse
+bool PRESSED_BUTTONS[5] = {false, false, false, false, false};
+bool PRESSED_MOUSE[4] = {false, false, false, false}; // the scroll up/down are a single boolean
+
+int window_hieght, window_width; // window sizes
 
 using namespace std;
 
@@ -115,6 +122,44 @@ SDL_Texture* tex_SLASH =	NULL;
 SDL_Texture* tex_SPACE =	NULL;
 SDL_Texture* tex_TAB =		NULL;
 
+int ntrues_keyboard()
+{
+	int count = 0;
+	if (PRESSED_BUTTONS[0] && SHOW_CTRL)	count++;
+	if (PRESSED_BUTTONS[1] && SHOW_SHIFT)	count++;
+	if (PRESSED_BUTTONS[2] && SHOW_SUPER)	count++;
+	if (PRESSED_BUTTONS[3] && SHOW_ALT)		count++;
+	if (PRESSED_BUTTONS[4] && SHOW_LETTERS)	count++;
+	return count;
+}
+
+int ntrues_mouse()
+{
+	int count = 0;
+	for (int i=0;i<4;i++)
+		if (PRESSED_MOUSE[i]) count++;
+	return count;
+}
+int check_mouse_clicked()
+{
+	if ((PRESSED_MOUSE[0] || PRESSED_MOUSE[1] || PRESSED_MOUSE[2] || PRESSED_MOUSE[3]) && SHOW_MOUSE) return 1;
+	else return 0;
+}
+
+void check_show_window()
+{
+	if (TRANSPARENT_MODE)
+	{
+		if (ntrues_keyboard() == 0 && check_mouse_clicked() == 0) SDL_HideWindow(window);
+		else SDL_ShowWindow(window);
+	}
+}
+void update_window_hieght()
+{
+	if (check_mouse_clicked() == 1) window_hieght = MOUSE_HIEGHT > BUTTON_HIEGHT? MOUSE_HIEGHT : BUTTON_HIEGHT;
+	else window_hieght = BUTTON_HIEGHT;
+}
+
 void imageToTexture(string image_path, SDL_Texture* &tex_temp, SDL_Renderer* renderer_temp)
 {
 	image_absolute_path = current_path + image_path;
@@ -167,13 +212,67 @@ void keyboard_loop()
 				switch (global_keyboard.code)
 				{
 					case KEY_RIGHTCTRL:
-					case KEY_LEFTCTRL:		if (SHOW_CTRL) SDL_RenderCopy(renderer, tex_ctrl,  NULL, &rect_ctrl); break;
+					case KEY_LEFTCTRL:
+						if (SHOW_CTRL)
+						{
+							if (TRANSPARENT_MODE)
+							{
+								PRESSED_BUTTONS[0] = false;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
+							else SDL_RenderCopy(renderer, tex_ctrl,  NULL, &rect_ctrl);
+						}
+						break;
 					case KEY_RIGHTSHIFT:
-					case KEY_LEFTSHIFT:		if (SHOW_SHIFT) SDL_RenderCopy(renderer, tex_shift,  NULL, &rect_shift); break;
-					case KEY_LEFTMETA:		if (SHOW_SUPER) SDL_RenderCopy(renderer, tex_super,  NULL, &rect_super); break;
+					case KEY_LEFTSHIFT:
+						if (SHOW_SHIFT)
+						{
+							if (TRANSPARENT_MODE)
+							{
+								PRESSED_BUTTONS[1] = false;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
+							else SDL_RenderCopy(renderer, tex_shift,  NULL, &rect_shift);
+						}
+						break;
+					case KEY_LEFTMETA:
+						if (SHOW_SUPER)
+						{
+							if (TRANSPARENT_MODE)
+							{
+								PRESSED_BUTTONS[2] = false;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
+							else SDL_RenderCopy(renderer, tex_super,  NULL, &rect_super);
+						}
+						break;
 					case KEY_RIGHTALT:
-					case KEY_LEFTALT:		if (SHOW_ALT) SDL_RenderCopy(renderer, tex_alt,  NULL, &rect_alt); break;
-					default: SDL_RenderCopy(renderer, tex_general,  NULL, &rect_letters);
+					case KEY_LEFTALT:
+						if (SHOW_ALT)
+						{
+							if (TRANSPARENT_MODE)
+							{
+								PRESSED_BUTTONS[3] = false;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
+							else SDL_RenderCopy(renderer, tex_alt,  NULL, &rect_alt);
+						}
+						break;
+					default:
+						if (SHOW_LETTERS)
+						{
+							if(TRANSPARENT_MODE)
+							{
+								PRESSED_BUTTONS[4] = false;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
+							else SDL_RenderCopy(renderer, tex_general,  NULL, &rect_letters);
+						}
 				}
 			}
 			if (global_keyboard.value == 1)
@@ -181,15 +280,70 @@ void keyboard_loop()
 				switch (global_keyboard.code)
 				{
 					case KEY_RIGHTCTRL:
-					case KEY_LEFTCTRL:		if (SHOW_CTRL) SDL_RenderCopy(renderer, tex_ctrlP,  NULL, &rect_ctrl); break;
+					case KEY_LEFTCTRL:
+						if (SHOW_CTRL)
+						{
+							if (TRANSPARENT_MODE)
+							{
+								rect_ctrl.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								PRESSED_BUTTONS[0] = true;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
+							SDL_RenderCopy(renderer, tex_ctrlP,  NULL, &rect_ctrl);
+						}
+						break;
 					case KEY_RIGHTSHIFT:
-					case KEY_LEFTSHIFT:		if (SHOW_SHIFT) SDL_RenderCopy(renderer, tex_shiftP,  NULL, &rect_shift); break;
-					case KEY_LEFTMETA:		if (SHOW_SUPER) SDL_RenderCopy(renderer, tex_superP,  NULL, &rect_super); break;
+					case KEY_LEFTSHIFT:
+						if (SHOW_SHIFT)
+						{
+							if (TRANSPARENT_MODE)
+							{
+								rect_shift.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								PRESSED_BUTTONS[1] = true;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
+							SDL_RenderCopy(renderer, tex_shiftP,  NULL, &rect_shift);
+						}
+						break;
+					case KEY_LEFTMETA:
+						if (SHOW_SUPER)
+						{
+							if (TRANSPARENT_MODE)
+							{
+								rect_super.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								PRESSED_BUTTONS[2] = true;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
+							SDL_RenderCopy(renderer, tex_superP,  NULL, &rect_super);
+						}
+						break;
 					case KEY_RIGHTALT:
-					case KEY_LEFTALT:		if (SHOW_ALT) SDL_RenderCopy(renderer, tex_altP,  NULL, &rect_alt); break;
+					case KEY_LEFTALT:
+						if (SHOW_ALT)
+						{
+							if (TRANSPARENT_MODE)
+							{
+								rect_alt.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								PRESSED_BUTTONS[3] = true;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
+							SDL_RenderCopy(renderer, tex_altP,  NULL, &rect_alt);
+						}
+						break;
 					// the boring part of checking all the letters
 					default: if (SHOW_LETTERS)
 						{
+							if (TRANSPARENT_MODE)
+							{
+								rect_letters.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								PRESSED_BUTTONS[4] = true;
+								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								SDL_SetWindowSize(window, window_width, window_hieght);
+							}
 							switch (global_keyboard.code)
 							{
 								case KEY_A:				SDL_RenderCopy(renderer, tex_A,			NULL, &rect_letters); break;
@@ -252,6 +406,7 @@ void keyboard_loop()
 				}
 			}
 		}
+		check_show_window();
 	}
 }
 
@@ -269,33 +424,90 @@ void mouse_loop()
 		if (global_mouse.type == EV_KEY)
 		{
 			//checking if any of the three buttons release(right,left,wheel)
-			if (global_mouse.value == 0 && global_mouse.code > 27 && global_mouse.code < 275)
+			if (global_mouse.value == 0 && global_mouse.code > 271 && global_mouse.code < 275)
 			{
-				SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+				if (TRANSPARENT_MODE)
+				{
+					if (global_mouse.code == 272) PRESSED_MOUSE[0] = false;
+					if (global_mouse.code == 273) PRESSED_MOUSE[1] = false;
+					if (global_mouse.code == 274) PRESSED_MOUSE[2] = false;
+
+					window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+					update_window_hieght();
+					SDL_SetWindowSize(window, window_width, window_hieght);
+				}
+				if (check_mouse_clicked() == 0) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
 			}
 			if (global_mouse.value == 1)
 			{
 				switch (global_mouse.code)
 				{
-					case 272: SDL_RenderCopy(renderer, tex_mouse_leftP,  NULL, &rect_mouse); break;
-					case 273: SDL_RenderCopy(renderer, tex_mouse_rightP,  NULL, &rect_mouse); break;
-					case 274: SDL_RenderCopy(renderer, tex_mouse_wheelP,  NULL, &rect_mouse); break;
+					case 272: // left click
+						if (TRANSPARENT_MODE)
+						{
+							PRESSED_MOUSE[0] = true;
+							rect_mouse.x = ntrues_keyboard() * BUTTON_WIDTH;
+							window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+							update_window_hieght();
+							SDL_SetWindowSize(window, window_width, window_hieght);
+							if (ntrues_mouse() <= 1) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+						}
+						SDL_RenderCopy(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
+						break;
+					case 273: // right click
+						if (TRANSPARENT_MODE)
+						{
+							PRESSED_MOUSE[1] = true;
+							rect_mouse.x = ntrues_keyboard() * BUTTON_WIDTH;
+							window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+							update_window_hieght();
+							SDL_SetWindowSize(window, window_width, window_hieght);
+							if (ntrues_mouse() <= 1) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+						}
+						SDL_RenderCopy(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
+						break;
+					case 274: // middle wheel
+						if (TRANSPARENT_MODE)
+						{
+							PRESSED_MOUSE[2] = true;
+							rect_mouse.x = ntrues_keyboard() * BUTTON_WIDTH;
+							window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+							update_window_hieght();
+							SDL_SetWindowSize(window, window_width, window_hieght);
+							if (ntrues_mouse() <= 1) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+						}
+						SDL_RenderCopy(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
+						break;
 				}
 			}
 		}
 		// checking if the type is = 2 (relative)
 		if (global_mouse.type == EV_REL && global_mouse.code == 11)
 		{
+			if (TRANSPARENT_MODE)
+			{
+				PRESSED_MOUSE[3] = true;
+				rect_mouse.x = ntrues_keyboard() * BUTTON_WIDTH;
+				window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+				SDL_SetWindowSize(window, window_width, window_hieght);
+				SDL_ShowWindow(window);
+			}
 			// checking if scrolled up
 			if (global_mouse.value == 120)
 				SDL_RenderCopy(renderer, tex_mouse_wheelup,  NULL, &rect_mouse);
-			else 
+			else // scrolled down
 				SDL_RenderCopy(renderer, tex_mouse_wheeldown,  NULL, &rect_mouse);
 
 			// to make the arrow show for a small period of time we should sleep then show the normal mouse image
 			// other wise the arrows will stay until a button is released
 			SDL_Delay(200);
 			SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+			PRESSED_MOUSE[3] = false;
+		}
+		if (TRANSPARENT_MODE)
+		{
+			if (ntrues_keyboard() == 0 && check_mouse_clicked() == 0) SDL_HideWindow(window);
+			else SDL_ShowWindow(window);
 		}
 	}
 }
@@ -312,7 +524,6 @@ int main(int argc, char* argv[]) {
 	string arg_next2;
 
 	int X=0,Y=0; // position variables
-	int window_hieght, window_width; // window sizes
 	short int nButtons = 0; // this shows the number of buttons including the general button
 	#include "arg.h"
 	if (SHOW_CTRL) 
@@ -356,10 +567,19 @@ int main(int argc, char* argv[]) {
 	// the first include to control the boolean variables
 	#include "arg.h"
 
-	if (!SHOW_BORDERS)
-		window = SDL_CreateWindow( "keysun", X, Y, window_width, window_hieght, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP);
-	else
-		window = SDL_CreateWindow( "keysun", X, Y, window_width, window_hieght, SDL_WINDOW_SHOWN | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP);
+	if (!TRANSPARENT_MODE)
+	{
+		if (SHOW_BORDERS)
+			window = SDL_CreateWindow( "keysun", X, Y, window_width, window_hieght, SDL_WINDOW_SHOWN | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP);
+		else
+			window = SDL_CreateWindow( "keysun", X, Y, window_width, window_hieght, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP);
+	}
+	else // transparent mode on then make the window as TOOLTIP to make it not focusable
+	{
+		window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+		update_window_hieght();
+		window = SDL_CreateWindow( "keysun", X, Y, window_width, window_hieght, SDL_WINDOW_TOOLTIP | SDL_WINDOW_ALWAYS_ON_TOP);
+	}
 
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if (SHOW_CTRL) 
