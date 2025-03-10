@@ -153,11 +153,6 @@ while (i < argc)
 	}
 }
 
-if (POS_RIGHT)
-	X = SCREEN_W-window_width;
-if (POS_BUTTOM)
-	Y = SCREEN_H-window_hieght;
-
 if (!SHOW_KEYBOARD && !SHOW_MOUSE)
 {
 	cout << "you turned of both mouse and keyboard. what do you want to see" << endl;

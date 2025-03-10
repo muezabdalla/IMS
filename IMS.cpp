@@ -593,7 +593,12 @@ int main(int argc, char* argv[]) {
 
 	// again to update the position after the change in nButtons
 	// the first include to control the boolean variables
-	#include "arg.h"
+	//#include "arg.h"
+
+	if (POS_RIGHT)
+		X = SCREEN_W-window_width;
+	if (POS_BUTTOM)
+		Y = SCREEN_H-window_hieght;
 
 	if (!TRANSPARENT_MODE)
 	{
