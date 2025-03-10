@@ -27,8 +27,8 @@ bool SHOW_BORDERS = 	true;
 bool SHOW_KEYBOARD =	true;
 bool SHOW_MOUSE =		true;
 bool TRANSPARENT_MODE =	false;
-bool POS_RIGHT =		false; // when used the "-p right"
-bool POS_BUTTOM =		false; // when used the "-p buttom"
+bool POS_RIGHT =		false; // when used the "-p right <something>"
+bool POS_BUTTOM =		false; // when used the "-p <something> buttom"
 
 // a boolean for each button if it is pressed and the mouse
 bool PRESSED_BUTTONS[5] = {false, false, false, false, false};
@@ -590,10 +590,6 @@ int main(int argc, char* argv[]) {
 		window_hieght = BUTTON_HIEGHT;
 		window_width = BUTTON_WIDTH*nButtons;
 	}
-
-	// again to update the position after the change in nButtons
-	// the first include to control the boolean variables
-	//#include "arg.h"
 
 	if (POS_RIGHT)
 		X = SCREEN_W-window_width;

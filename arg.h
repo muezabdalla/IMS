@@ -107,6 +107,29 @@ while (i < argc)
 		}
 		i+=2;
 
+	} else if (arg_current == "-I") {
+		// checking if the arguments after -i are less than required
+		if (argc-i-1 < 1)
+		{
+			cout << "too few argument after -i" << endl;
+			return 1;
+		}
+		arg_next = argv[i+1];
+		if (arg_next.size() > 21)
+		{
+			cout << "this input file path is very long\nare you tring to make a memory issue" << endl;
+			return 1;
+		}
+
+		strcpy(MOUSE_FILE, arg_next.c_str());
+
+		if (!std::filesystem::exists(MOUSE_FILE))
+		{
+			cout << "file " << MOUSE_FILE << " does not exist" << endl;
+			return 1;
+		}
+		i+=2;
+
 	} else if (arg_current == "-c") {
 		SHOW_CTRL = false;
 		i++;
@@ -118,6 +141,9 @@ while (i < argc)
 		i++;
 	} else if (arg_current == "-a") {
 		SHOW_ALT = false;
+		i++;
+	} else if (arg_current == "-g") {
+		SHOW_LETTERS = false;
 		i++;
 
 	} else if (arg_current == "-k") {
