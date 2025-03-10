@@ -20,7 +20,7 @@ while (i < argc)
 		arg_next2 = argv[i+2];
 
 		if (arg_next == "right")
-			POS_RIGHT = true;//X = SCREEN_W-BUTTON_WIDTH*nButtons;
+			POS_RIGHT = true;
 		else if (arg_next == "left")
 			X = 0;
 		else 
@@ -29,7 +29,7 @@ while (i < argc)
 		if (arg_next2 == "top")
 			Y = 0;
 		else if (arg_next2 == "buttom")
-			POS_BUTTOM = true;//Y = SCREEN_H-BUTTON_HIEGHT;
+			POS_BUTTOM = true;
 		else 
 			Y = atoi(argv[i+1]);
 
