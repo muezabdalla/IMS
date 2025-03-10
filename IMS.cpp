@@ -581,7 +581,7 @@ int main(int argc, char* argv[]) {
 	}
 	if (SHOW_MOUSE)
 	{
-		rect_mouse =	{nButtons*BUTTON_WIDTH, 0, BUTTON_WIDTH, BUTTON_HIEGHT}; 
+		rect_mouse =	{nButtons*BUTTON_WIDTH, 0, MOUSE_WIDTH, MOUSE_HIEGHT}; 
 		window_hieght = BUTTON_HIEGHT > MOUSE_HIEGHT ? BUTTON_HIEGHT : MOUSE_HIEGHT;
 		window_width = BUTTON_WIDTH*nButtons + MOUSE_WIDTH;
 	}
