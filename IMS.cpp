@@ -27,6 +27,8 @@ bool SHOW_BORDERS = 	true;
 bool SHOW_KEYBOARD =	true;
 bool SHOW_MOUSE =		true;
 bool TRANSPARENT_MODE =	false;
+bool POS_RIGHT =		false; // when used the "-p right"
+bool POS_BUTTOM =		false; // when used the "-p buttom"
 
 // a boolean for each button if it is pressed and the mouse
 bool PRESSED_BUTTONS[5] = {false, false, false, false, false};

@@ -20,7 +20,7 @@ while (i < argc)
 		arg_next2 = argv[i+2];
 
 		if (arg_next == "right")
-			X = SCREEN_W-BUTTON_WIDTH*nButtons;
+			POS_RIGHT = true;//X = SCREEN_W-BUTTON_WIDTH*nButtons;
 		else if (arg_next == "left")
 			X = 0;
 		else 
@@ -29,7 +29,7 @@ while (i < argc)
 		if (arg_next2 == "top")
 			Y = 0;
 		else if (arg_next2 == "buttom")
-			Y = SCREEN_H-BUTTON_HIEGHT;
+			POS_BUTTOM = true;//Y = SCREEN_H-BUTTON_HIEGHT;
 		else 
 			Y = atoi(argv[i+1]);
 
@@ -152,6 +152,12 @@ while (i < argc)
 		i++;
 	}
 }
+
+if (POS_RIGHT)
+	X = SCREEN_W-window_width;
+if (POS_BUTTOM)
+	Y = SCREEN_H-window_hieght;
+
 if (!SHOW_KEYBOARD && !SHOW_MOUSE)
 {
 	cout << "you turned of both mouse and keyboard. what do you want to see" << endl;
