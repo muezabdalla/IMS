@@ -9,8 +9,8 @@
 //#include <string>
 #include <thread>
 
-char KEYBOARD_FILE[22] = "/dev/input/event0";
-char MOUSE_FILE[22] =	"/dev/input/event4";
+char KEYBOARD_FILE[22] =	"/dev/input/event";
+char MOUSE_FILE[22] =		"/dev/input/event";
 
 int BUTTON_WIDTH =	100;
 int BUTTON_HIEGHT =	60;
@@ -121,6 +121,26 @@ SDL_Texture* tex_SEMICOLON =NULL;
 SDL_Texture* tex_SLASH =	NULL;
 SDL_Texture* tex_SPACE =	NULL;
 SDL_Texture* tex_TAB =		NULL;
+
+char get_command_output(const char * command)
+{
+	char output;
+	FILE *fpipe;
+	fpipe = popen(command, "r");
+	if (fpipe == NULL)
+	{
+		cout << "error running the command:" << command << endl;
+		return -1;
+	}
+	fread(&output, sizeof output, 1, fpipe);
+	if (fread == NULL)
+	{
+		cout << "error storing the output of the command:" << command << endl;
+		return -1;
+	}
+	pclose(fpipe);
+	return output;
+}
 
 int ntrues_keyboard()
 {
@@ -513,6 +533,12 @@ void mouse_loop()
 }
 
 int main(int argc, char* argv[]) {
+
+	// detecting the event files for keyboard and mouse
+	char keyboard_number =	get_command_output("ls /dev/input/by-path/ -la | grep -o \"event-kbd -> ../event[0-9]*\" | grep -o \"[0-9]*\" | head -1");
+	char mouse_number =		get_command_output("ls /dev/input/by-path/ -la | grep -o \"event-mouse -> ../event[0-9]*\" | grep -o \"[0-9]*\" | head -1");
+	KEYBOARD_FILE[16] =		keyboard_number;
+	MOUSE_FILE[16] =		mouse_number;
 
 	current_path = argv[0];
 	// remove last seven chars(IMS) by subtracting totall length - 3
