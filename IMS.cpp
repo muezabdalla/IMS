@@ -680,15 +680,15 @@ int main(int argc, char* argv[]) {
 	if (!TRANSPARENT_MODE)
 	{
 		if (SHOW_BORDERS)
-			window = SDL_CreateWindow( "keysun", X, Y, window_width, window_hieght, SDL_WINDOW_SHOWN | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP);
+			window = SDL_CreateWindow("IMS", X, Y, window_width, window_hieght, SDL_WINDOW_SHOWN | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP);
 		else
-			window = SDL_CreateWindow( "keysun", X, Y, window_width, window_hieght, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP);
+			window = SDL_CreateWindow("IMS", X, Y, window_width, window_hieght, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP);
 	}
 	else // transparent mode on then make the window as TOOLTIP to make it not focusable
 	{
 		window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 		update_window_hieght();
-		window = SDL_CreateWindow( "keysun", X, Y, window_width, window_hieght, SDL_WINDOW_TOOLTIP | SDL_WINDOW_ALWAYS_ON_TOP);
+		window = SDL_CreateWindow("IMS", X, Y, window_width, window_hieght, SDL_WINDOW_TOOLTIP | SDL_WINDOW_ALWAYS_ON_TOP);
 	}
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	// initializing the blank texture
