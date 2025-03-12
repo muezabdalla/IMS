@@ -9,6 +9,9 @@ or scroll the mouse wheel
 
 .SH OPTIONS
 .TP
+.BI \-h
+show this manual and exit
+.TP
 .BI \-p " <num1> <num2>"
 the window will apear at position defined. num1 is the x cordinate(horizantally) and num2 is the y cordinate(vertical)
 for example "-p 10 0" will make the window apear 10 pexiles away from the left and 0 pixels away from the top
@@ -18,15 +21,21 @@ acceptable word are: left and right for num1 and top and buttom for num2
 .BI \-s " <num1> <num2>"
 this defines the size of the key(for a single key). num1 is the length along x cordinate(horizantally)(the width)
 and num2 is the length along y cordinate(vertical)(the hieght)
-for example "-S 100 60" will make the key  width 100 and hieght 60 pixels away from the top
-
-note: if you want to define both the size and position then define the size first
+for example "-S 100 60" will make the key  width 100 and hieght 60 pixels
+.TP
+.BI \-S " <num1> <num2>"
+this defines the size of the mouse. num1 is the length along x cordinate(horizantally)(the width)
+and num2 is the length along y cordinate(vertical)(the hieght)
+for example "-S 100 60" will make the mouse width 100 and hieght 60 pixels
 .TP
 .BI \-i " /path/to/file"
-this will make the program read from the file specified instead of the defualt(defualt is "/dev/input/event4")
-if the program does not detect any key press that means the mouse input file is differant for your system
-you can know the mouse input file by running "cat /dev/input/event5" and move the mouse if there is an output 
+this will make the program read from the specified keyboard file instead of the defualt
+if the program does not detect any key press that means the keyboard input file is differant for your system
+you can know the keyboard input file by running "cat /dev/input/event5" and press a key in the keyboard if there is an output 
 that mean this is the right file else try another file
+.TP
+.BI \-I " /path/to/file"
+same as the -i flag but for the mouse file
 .TP
 .BI \-b
 turn off the borders of the window
@@ -43,6 +52,9 @@ turn off the super key
 .BI \-a
 turn off the alt key
 .TP
+.BI \-g
+turn off the general key (the ket that shows the other characters and numbers)
+.TP
 .BI \-k
 turn off all the keyboard
 .TP
@@ -51,3 +63,7 @@ turn off the mouse
 .TP
 .BI \-r " <num>"
 change the refresh time (the time between refresh in miliseconds)
+.TP
+.BI \-T
+run with the transparent mpde.
+it shows the keys only when they are pressed and if there is no pressed keys it will hide the window.
