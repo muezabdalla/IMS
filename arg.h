@@ -108,10 +108,10 @@ while (i < argc)
 		i+=2;
 
 	} else if (arg_current == "-I") {
-		// checking if the arguments after -i are less than required
+		// checking if the arguments after -I are less than required
 		if (argc-i-1 < 1)
 		{
-			cout << "too few argument after -i" << endl;
+			cout << "too few argument after -I" << endl;
 			return 1;
 		}
 		arg_next = argv[i+1];
