@@ -30,11 +30,18 @@ bool TRANSPARENT_MODE =	false;
 bool POS_RIGHT =		false; // when used the "-p right <something>"
 bool POS_BUTTOM =		false; // when used the "-p <something> buttom"
 
+// factors to multibly the width of the button to increase it
+float FAC_BACKSPACE = 1.4;
+float FAC_ENTER = 1.5;
+float FAC_SPACE = 2;
+float FAC_TAB = 1.2;
+
 // a boolean for each button if it is pressed and the mouse
 bool PRESSED_BUTTONS[5] = {false, false, false, false, false};
 bool PRESSED_MOUSE[4] = {false, false, false, false}; // the scroll up/down are a single boolean
 
 int window_hieght, window_width; // window sizes
+short int nButtons = 0; // this shows the number of buttons including the general button
 
 using namespace std;
 
@@ -44,6 +51,12 @@ string image_absolute_path;
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 
+// blank surface to hide the defects
+SDL_Rect rect_blank;
+SDL_Surface* sur_blank = NULL;
+SDL_Texture* tex_blank = NULL;
+
+
 // the x,y positons and width and hieght on the window
 SDL_Rect rect_ctrl;
 SDL_Rect rect_shift;
@@ -51,6 +64,11 @@ SDL_Rect rect_super;
 SDL_Rect rect_alt;
 SDL_Rect rect_letters;
 SDL_Rect rect_mouse;
+// spetial rectangles for the letters that have factors
+SDL_Rect rect_backspace;
+SDL_Rect rect_enter;
+SDL_Rect rect_space;
+SDL_Rect rect_tab;
 
 // initializing outside the if statments to be able to use them
 SDL_Texture* tex_ctrl =		NULL;
@@ -176,10 +194,51 @@ void check_show_window()
 		else SDL_ShowWindow(window);
 	}
 }
+
 void update_window_hieght()
 {
 	if (check_mouse_clicked() == 1) window_hieght = MOUSE_HIEGHT > BUTTON_HIEGHT? MOUSE_HIEGHT : BUTTON_HIEGHT;
 	else window_hieght = BUTTON_HIEGHT;
+}
+
+// update the window width and the mouse x position using the factor
+void update_window_width(float factor)
+{
+	// update window width
+	if (TRANSPARENT_MODE)
+	{
+		window_width = ntrues_keyboard() * BUTTON_WIDTH;
+		if (SHOW_MOUSE) window_width += check_mouse_clicked() * MOUSE_WIDTH;
+		if (PRESSED_BUTTONS[4]) window_width = window_width - BUTTON_WIDTH + factor*BUTTON_WIDTH;
+
+	}
+	else
+	{
+		window_width = (nButtons-1) * BUTTON_WIDTH + int(BUTTON_WIDTH*factor);
+		if (SHOW_MOUSE) window_width += MOUSE_WIDTH;
+	}
+	SDL_SetWindowSize(window, window_width, window_hieght);
+
+	// changing the mouse position
+	if (SHOW_MOUSE)
+	{
+		rect_mouse.x = window_width - MOUSE_WIDTH;
+		/*
+		if (TRANSPARENT_MODE)
+		{
+			if (check_mouse_clicked() == 1) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+		}
+		else SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+		*/
+		if ( (TRANSPARENT_MODE && check_mouse_clicked()) || (!TRANSPARENT_MODE) )
+			SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+
+		if (PRESSED_BUTTONS[0]) SDL_RenderCopy(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
+		if (PRESSED_BUTTONS[1]) SDL_RenderCopy(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
+		if (PRESSED_BUTTONS[2]) SDL_RenderCopy(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
+	}
+	// updating the blank rectangle to use it
+	rect_blank = {rect_letters.x, 0, int(BUTTON_WIDTH*factor), window_hieght};
 }
 
 void imageToTexture(string image_path, SDL_Texture* &tex_temp, SDL_Renderer* renderer_temp)
@@ -294,6 +353,12 @@ void keyboard_loop()
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
 							else SDL_RenderCopy(renderer, tex_general,  NULL, &rect_letters);
+							// returning the size of the window for the large keys
+							if (global_keyboard.code == KEY_BACKSPACE || 
+								global_keyboard.code == KEY_ENTER || 
+								global_keyboard.code == KEY_SPACE || 
+								global_keyboard.code == KEY_TAB)
+								update_window_width(1);
 						}
 				}
 			}
@@ -406,11 +471,18 @@ void keyboard_loop()
 								case KEY_9:				SDL_RenderCopy(renderer, tex_9,			NULL, &rect_letters); break;
 								case KEY_APOSTROPHE:	SDL_RenderCopy(renderer, tex_APOSTROPHE,NULL, &rect_letters); break;
 								case KEY_BACKSLASH:		SDL_RenderCopy(renderer, tex_BACKSLASH,	NULL, &rect_letters); break;
-								case KEY_BACKSPACE:		SDL_RenderCopy(renderer, tex_BACKSPACE,	NULL, &rect_letters); break;
+								case KEY_BACKSPACE:
+														update_window_width(FAC_BACKSPACE);
+														SDL_RenderCopy(renderer, tex_blank,		NULL, &rect_blank);
+														SDL_RenderCopy(renderer, tex_BACKSPACE,	NULL, &rect_backspace); break;
+
 								case KEY_COMMA:			SDL_RenderCopy(renderer, tex_COMMA,		NULL, &rect_letters); break;
 								case KEY_DELETE:		SDL_RenderCopy(renderer, tex_DELETE,	NULL, &rect_letters); break;
 								case KEY_DOT:			SDL_RenderCopy(renderer, tex_DOT,		NULL, &rect_letters); break;
-								case KEY_ENTER:			SDL_RenderCopy(renderer, tex_ENTER,		NULL, &rect_letters); break;
+								case KEY_ENTER:			
+														update_window_width(FAC_ENTER);
+														SDL_RenderCopy(renderer, tex_blank,		NULL, &rect_blank);
+														SDL_RenderCopy(renderer, tex_ENTER,		NULL, &rect_enter); break;
 								case KEY_EQUAL:			SDL_RenderCopy(renderer, tex_EQUAL,		NULL, &rect_letters); break;
 								case KEY_ESC:			SDL_RenderCopy(renderer, tex_ESC,		NULL, &rect_letters); break;
 								case KEY_GRAVE:			SDL_RenderCopy(renderer, tex_GRAVE,		NULL, &rect_letters); break;
@@ -419,8 +491,14 @@ void keyboard_loop()
 								case KEY_RIGHTBRACE:	SDL_RenderCopy(renderer, tex_RIGHTBRACE,NULL, &rect_letters); break;
 								case KEY_SEMICOLON:		SDL_RenderCopy(renderer, tex_SEMICOLON,	NULL, &rect_letters); break;
 								case KEY_SLASH:			SDL_RenderCopy(renderer, tex_SLASH,		NULL, &rect_letters); break;
-								case KEY_SPACE:			SDL_RenderCopy(renderer, tex_SPACE,		NULL, &rect_letters); break;
-								case KEY_TAB:			SDL_RenderCopy(renderer, tex_TAB,		NULL, &rect_letters); break;
+								case KEY_SPACE:			
+														update_window_width(FAC_SPACE);
+														SDL_RenderCopy(renderer, tex_blank,		NULL, &rect_blank);
+														SDL_RenderCopy(renderer, tex_SPACE,		NULL, &rect_space); break;
+								case KEY_TAB:			
+														update_window_width(FAC_TAB);
+														SDL_RenderCopy(renderer, tex_blank,		NULL, &rect_blank);
+														SDL_RenderCopy(renderer, tex_TAB,		NULL, &rect_tab); break;
 			
 								default: cout << "code:" << global_keyboard.code << endl;
 							}
@@ -552,7 +630,6 @@ int main(int argc, char* argv[]) {
 	string arg_next2;
 
 	int X=0,Y=0; // position variables
-	short int nButtons = 0; // this shows the number of buttons including the general button
 	#include "arg.h"
 	if (SHOW_CTRL) 
 	{
@@ -576,7 +653,11 @@ int main(int argc, char* argv[]) {
 	}
 	if (SHOW_LETTERS)
 	{
-		rect_letters =	{nButtons*BUTTON_WIDTH, 0, BUTTON_WIDTH, BUTTON_HIEGHT};
+		rect_letters =		{nButtons*BUTTON_WIDTH, 0, BUTTON_WIDTH, BUTTON_HIEGHT};
+		rect_backspace =	{nButtons*BUTTON_WIDTH, 0, int(BUTTON_WIDTH*FAC_BACKSPACE), BUTTON_HIEGHT};
+		rect_enter =		{nButtons*BUTTON_WIDTH, 0, int(BUTTON_WIDTH*FAC_ENTER), BUTTON_HIEGHT};
+		rect_space =		{nButtons*BUTTON_WIDTH, 0, int(BUTTON_WIDTH*FAC_SPACE), BUTTON_HIEGHT};
+		rect_tab =			{nButtons*BUTTON_WIDTH, 0, int(BUTTON_WIDTH*FAC_TAB), BUTTON_HIEGHT};
 		nButtons++;
 	}
 	if (SHOW_MOUSE)
@@ -609,8 +690,12 @@ int main(int argc, char* argv[]) {
 		update_window_hieght();
 		window = SDL_CreateWindow( "keysun", X, Y, window_width, window_hieght, SDL_WINDOW_TOOLTIP | SDL_WINDOW_ALWAYS_ON_TOP);
 	}
-
 	renderer = SDL_CreateRenderer(window, -1, 0);
+	// initializing the blank texture
+	sur_blank = SDL_GetWindowSurface(window);
+	SDL_FillRect(sur_blank, NULL, SDL_MapRGB(sur_blank->format, 0, 0, 0));
+	tex_blank = SDL_CreateTextureFromSurface(renderer, sur_blank);
+
 	if (SHOW_CTRL) 
 	{
 		// making the surfaces from the images
