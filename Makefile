@@ -7,7 +7,7 @@ SRC = IMS.cpp
 TARGET = IMS
 
 IMS: $(SRC)
-	$(CXX) $(SRC) -o $(TARGET) $(LIBS)
+	$(CXX) $(SRC) -o $(TARGET) $(LIBS) 
 
 clean :
 	rm $(TARGET)

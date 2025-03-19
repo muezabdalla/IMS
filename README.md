@@ -10,44 +10,18 @@ this is a software to show the keyboard clicks on screen. it is useful when maki
 [comment]: # (<img src="./screenshots/mouse.png" height="100" align="left"/>)
 
 ## how to install
-first download the tar file from the [releases](https://github.com/muezabdalla/IMS/releases)
-note: download the IMS.tar not the source code(the source code is for building from source)
+first download the appimage file from the [releases](https://github.com/muezabdalla/IMS/releases)
 
-then extract the tar file with this command:
-
-```
-tar -xf IMS.tar
-```
-
-then move inside the new folder
+then make it executable with this command:
 
 ```
-cd IMS*
+chmod +x IMS*.AppImage
 ```
 
-then install the dependancies
-
-### dependancies:
-
-- SDL2
-- SDL2_image
-
-installing dependancies on void linux:
+then run it:
 
 ```
-sudo xbps-install SDL2 SDL2_image
-```
-
-installing dependancies on debian-based linux:
-
-```
-sudo apt install libsdl2 libsdl2-image
-```
-
-then to run it:
-
-```
-./IMS
+./IMS*.AppImage
 ```
 
 ## building from source
