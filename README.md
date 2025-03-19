@@ -67,7 +67,11 @@ to run it:
 
 - if it does not show effect when you click that means you should change the input file by using -i flag. this is becouse the input file for your keyboard file might be differant so check the event file in your `/dev/input/eventX' where X might be any number.
 for example if you want to check `/dev/input/event2` then run `cat /dev/input/event2` then click any key on the keyboard if there is an output it means that this is the keyboard input file else try another file.
-- if when you use `cat /dev/input/event0` you get authentication failed or something like that. then you have two options. first: run the program as root (not recommended) second: add yourself to the input group
+- if when you use `cat /dev/input/event0` you get authentication failed or something like that. then you have two options. first: run the program as root (not recommended) second: add yourself to the input group using this command:
+
+```
+usermod -a -G input user
+```
 
 ## similar projects:
 - [key-mon](https://github.com/scottkirkwood/key-mon)
