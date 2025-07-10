@@ -16,7 +16,7 @@ int BUTTON_WIDTH =	100;
 int BUTTON_HIEGHT =	60;
 int MOUSE_WIDTH =	90;
 int MOUSE_HIEGHT =	90;
-int REFRESH_TIME =	100;
+int REFRESH_TIME =	50;
 
 bool SHOW_CTRL =		true;
 bool SHOW_SHIFT =		true;
@@ -29,6 +29,12 @@ bool SHOW_MOUSE =		true;
 bool TRANSPARENT_MODE =	false;
 bool POS_RIGHT =		false; // when used the "-p right <something>"
 bool POS_BUTTOM =		false; // when used the "-p <something> buttom"
+bool NEED_REFRESH =		false; // to know if a refresh is needed
+void RenderCustom(SDL_Renderer * rendererT, SDL_Texture * textureT, const SDL_Rect * srcRectT, const SDL_Rect * dstRectT)
+{
+	SDL_RenderCopy(rendererT, textureT,  srcRectT, dstRectT);
+	NEED_REFRESH = true;
+}
 
 // factors to multibly the width of the button to increase it
 float FAC_BACKSPACE = 1.4;
@@ -226,16 +232,16 @@ void update_window_width(float factor)
 		/*
 		if (TRANSPARENT_MODE)
 		{
-			if (check_mouse_clicked() == 1) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+			if (check_mouse_clicked() == 1) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
 		}
-		else SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+		else RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
 		*/
 		if ( (TRANSPARENT_MODE && check_mouse_clicked()) || (!TRANSPARENT_MODE) )
-			SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+			RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
 
-		if (PRESSED_MOUSE[0]) SDL_RenderCopy(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
-		if (PRESSED_MOUSE[1]) SDL_RenderCopy(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
-		if (PRESSED_MOUSE[2]) SDL_RenderCopy(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
+		if (PRESSED_MOUSE[0]) RenderCustom(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
+		if (PRESSED_MOUSE[1]) RenderCustom(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
+		if (PRESSED_MOUSE[2]) RenderCustom(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
 	}
 	// updating the blank rectangle to use it
 	rect_blank = {rect_letters.x, 0, int(BUTTON_WIDTH*factor), window_hieght};
@@ -302,7 +308,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else SDL_RenderCopy(renderer, tex_ctrl,  NULL, &rect_ctrl);
+							else RenderCustom(renderer, tex_ctrl,  NULL, &rect_ctrl);
 						}
 						break;
 					case KEY_RIGHTSHIFT:
@@ -315,7 +321,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else SDL_RenderCopy(renderer, tex_shift,  NULL, &rect_shift);
+							else RenderCustom(renderer, tex_shift,  NULL, &rect_shift);
 						}
 						break;
 					case KEY_LEFTMETA:
@@ -327,7 +333,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else SDL_RenderCopy(renderer, tex_super,  NULL, &rect_super);
+							else RenderCustom(renderer, tex_super,  NULL, &rect_super);
 						}
 						break;
 					case KEY_RIGHTALT:
@@ -340,7 +346,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else SDL_RenderCopy(renderer, tex_alt,  NULL, &rect_alt);
+							else RenderCustom(renderer, tex_alt,  NULL, &rect_alt);
 						}
 						break;
 					default:
@@ -352,7 +358,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else SDL_RenderCopy(renderer, tex_general,  NULL, &rect_letters);
+							else RenderCustom(renderer, tex_general,  NULL, &rect_letters);
 							// returning the size of the window for the large keys
 							if (global_keyboard.code == KEY_BACKSPACE || 
 								global_keyboard.code == KEY_ENTER || 
@@ -360,8 +366,8 @@ void keyboard_loop()
 								global_keyboard.code == KEY_TAB)
 								update_window_width(1);
 						}
-				}
-			}
+				} // switch (global_keyboard.code)
+			} // if (global_keyboard.value == 0)
 			if (global_keyboard.value == 1)
 			{
 				switch (global_keyboard.code)
@@ -377,7 +383,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							SDL_RenderCopy(renderer, tex_ctrlP,  NULL, &rect_ctrl);
+							RenderCustom(renderer, tex_ctrlP,  NULL, &rect_ctrl);
 						}
 						break;
 					case KEY_RIGHTSHIFT:
@@ -391,7 +397,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							SDL_RenderCopy(renderer, tex_shiftP,  NULL, &rect_shift);
+							RenderCustom(renderer, tex_shiftP,  NULL, &rect_shift);
 						}
 						break;
 					case KEY_LEFTMETA:
@@ -404,7 +410,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							SDL_RenderCopy(renderer, tex_superP,  NULL, &rect_super);
+							RenderCustom(renderer, tex_superP,  NULL, &rect_super);
 						}
 						break;
 					case KEY_RIGHTALT:
@@ -418,7 +424,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							SDL_RenderCopy(renderer, tex_altP,  NULL, &rect_alt);
+							RenderCustom(renderer, tex_altP,  NULL, &rect_alt);
 						}
 						break;
 					// the boring part of checking all the letters
@@ -433,77 +439,77 @@ void keyboard_loop()
 							}
 							switch (global_keyboard.code)
 							{
-								case KEY_A:				SDL_RenderCopy(renderer, tex_A,			NULL, &rect_letters); break;
-								case KEY_B:				SDL_RenderCopy(renderer, tex_B,			NULL, &rect_letters); break;
-								case KEY_C:				SDL_RenderCopy(renderer, tex_C,			NULL, &rect_letters); break;
-								case KEY_D:				SDL_RenderCopy(renderer, tex_D,			NULL, &rect_letters); break;
-								case KEY_E:				SDL_RenderCopy(renderer, tex_E,			NULL, &rect_letters); break;
-								case KEY_F:				SDL_RenderCopy(renderer, tex_F,			NULL, &rect_letters); break;
-								case KEY_G:				SDL_RenderCopy(renderer, tex_G,			NULL, &rect_letters); break;
-								case KEY_H:				SDL_RenderCopy(renderer, tex_H,			NULL, &rect_letters); break;
-								case KEY_I:				SDL_RenderCopy(renderer, tex_I,			NULL, &rect_letters); break;
-								case KEY_J:				SDL_RenderCopy(renderer, tex_J,			NULL, &rect_letters); break;
-								case KEY_K:				SDL_RenderCopy(renderer, tex_K,			NULL, &rect_letters); break;
-								case KEY_L:				SDL_RenderCopy(renderer, tex_L,			NULL, &rect_letters); break;
-								case KEY_M:				SDL_RenderCopy(renderer, tex_M,			NULL, &rect_letters); break;
-								case KEY_N:				SDL_RenderCopy(renderer, tex_N,			NULL, &rect_letters); break;
-								case KEY_O:				SDL_RenderCopy(renderer, tex_O,			NULL, &rect_letters); break;
-								case KEY_P:				SDL_RenderCopy(renderer, tex_P,			NULL, &rect_letters); break;
-								case KEY_Q:				SDL_RenderCopy(renderer, tex_Q,			NULL, &rect_letters); break;
-								case KEY_R:				SDL_RenderCopy(renderer, tex_R,			NULL, &rect_letters); break;
-								case KEY_S:				SDL_RenderCopy(renderer, tex_S,			NULL, &rect_letters); break;
-								case KEY_T:				SDL_RenderCopy(renderer, tex_T,			NULL, &rect_letters); break;
-								case KEY_U:				SDL_RenderCopy(renderer, tex_U,			NULL, &rect_letters); break;
-								case KEY_V:				SDL_RenderCopy(renderer, tex_V,			NULL, &rect_letters); break;
-								case KEY_W:				SDL_RenderCopy(renderer, tex_W,			NULL, &rect_letters); break;
-								case KEY_X:				SDL_RenderCopy(renderer, tex_X,			NULL, &rect_letters); break;
-								case KEY_Y:				SDL_RenderCopy(renderer, tex_Y,			NULL, &rect_letters); break;
-								case KEY_Z:				SDL_RenderCopy(renderer, tex_Z,			NULL, &rect_letters); break;
-								case KEY_0:				SDL_RenderCopy(renderer, tex_0,			NULL, &rect_letters); break;
-								case KEY_1:				SDL_RenderCopy(renderer, tex_1,			NULL, &rect_letters); break;
-								case KEY_2:				SDL_RenderCopy(renderer, tex_2,			NULL, &rect_letters); break;
-								case KEY_3:				SDL_RenderCopy(renderer, tex_3,			NULL, &rect_letters); break;
-								case KEY_4:				SDL_RenderCopy(renderer, tex_4,			NULL, &rect_letters); break;
-								case KEY_5:				SDL_RenderCopy(renderer, tex_5,			NULL, &rect_letters); break;
-								case KEY_6:				SDL_RenderCopy(renderer, tex_6,			NULL, &rect_letters); break;
-								case KEY_7:				SDL_RenderCopy(renderer, tex_7,			NULL, &rect_letters); break;
-								case KEY_8:				SDL_RenderCopy(renderer, tex_8,			NULL, &rect_letters); break;
-								case KEY_9:				SDL_RenderCopy(renderer, tex_9,			NULL, &rect_letters); break;
-								case KEY_APOSTROPHE:	SDL_RenderCopy(renderer, tex_APOSTROPHE,NULL, &rect_letters); break;
-								case KEY_BACKSLASH:		SDL_RenderCopy(renderer, tex_BACKSLASH,	NULL, &rect_letters); break;
+								case KEY_A:				RenderCustom(renderer, tex_A,			NULL, &rect_letters); break;
+								case KEY_B:				RenderCustom(renderer, tex_B,			NULL, &rect_letters); break;
+								case KEY_C:				RenderCustom(renderer, tex_C,			NULL, &rect_letters); break;
+								case KEY_D:				RenderCustom(renderer, tex_D,			NULL, &rect_letters); break;
+								case KEY_E:				RenderCustom(renderer, tex_E,			NULL, &rect_letters); break;
+								case KEY_F:				RenderCustom(renderer, tex_F,			NULL, &rect_letters); break;
+								case KEY_G:				RenderCustom(renderer, tex_G,			NULL, &rect_letters); break;
+								case KEY_H:				RenderCustom(renderer, tex_H,			NULL, &rect_letters); break;
+								case KEY_I:				RenderCustom(renderer, tex_I,			NULL, &rect_letters); break;
+								case KEY_J:				RenderCustom(renderer, tex_J,			NULL, &rect_letters); break;
+								case KEY_K:				RenderCustom(renderer, tex_K,			NULL, &rect_letters); break;
+								case KEY_L:				RenderCustom(renderer, tex_L,			NULL, &rect_letters); break;
+								case KEY_M:				RenderCustom(renderer, tex_M,			NULL, &rect_letters); break;
+								case KEY_N:				RenderCustom(renderer, tex_N,			NULL, &rect_letters); break;
+								case KEY_O:				RenderCustom(renderer, tex_O,			NULL, &rect_letters); break;
+								case KEY_P:				RenderCustom(renderer, tex_P,			NULL, &rect_letters); break;
+								case KEY_Q:				RenderCustom(renderer, tex_Q,			NULL, &rect_letters); break;
+								case KEY_R:				RenderCustom(renderer, tex_R,			NULL, &rect_letters); break;
+								case KEY_S:				RenderCustom(renderer, tex_S,			NULL, &rect_letters); break;
+								case KEY_T:				RenderCustom(renderer, tex_T,			NULL, &rect_letters); break;
+								case KEY_U:				RenderCustom(renderer, tex_U,			NULL, &rect_letters); break;
+								case KEY_V:				RenderCustom(renderer, tex_V,			NULL, &rect_letters); break;
+								case KEY_W:				RenderCustom(renderer, tex_W,			NULL, &rect_letters); break;
+								case KEY_X:				RenderCustom(renderer, tex_X,			NULL, &rect_letters); break;
+								case KEY_Y:				RenderCustom(renderer, tex_Y,			NULL, &rect_letters); break;
+								case KEY_Z:				RenderCustom(renderer, tex_Z,			NULL, &rect_letters); break;
+								case KEY_0:				RenderCustom(renderer, tex_0,			NULL, &rect_letters); break;
+								case KEY_1:				RenderCustom(renderer, tex_1,			NULL, &rect_letters); break;
+								case KEY_2:				RenderCustom(renderer, tex_2,			NULL, &rect_letters); break;
+								case KEY_3:				RenderCustom(renderer, tex_3,			NULL, &rect_letters); break;
+								case KEY_4:				RenderCustom(renderer, tex_4,			NULL, &rect_letters); break;
+								case KEY_5:				RenderCustom(renderer, tex_5,			NULL, &rect_letters); break;
+								case KEY_6:				RenderCustom(renderer, tex_6,			NULL, &rect_letters); break;
+								case KEY_7:				RenderCustom(renderer, tex_7,			NULL, &rect_letters); break;
+								case KEY_8:				RenderCustom(renderer, tex_8,			NULL, &rect_letters); break;
+								case KEY_9:				RenderCustom(renderer, tex_9,			NULL, &rect_letters); break;
+								case KEY_APOSTROPHE:	RenderCustom(renderer, tex_APOSTROPHE,NULL, &rect_letters); break;
+								case KEY_BACKSLASH:		RenderCustom(renderer, tex_BACKSLASH,	NULL, &rect_letters); break;
 								case KEY_BACKSPACE:
 														update_window_width(FAC_BACKSPACE);
-														SDL_RenderCopy(renderer, tex_blank,		NULL, &rect_blank);
-														SDL_RenderCopy(renderer, tex_BACKSPACE,	NULL, &rect_backspace); break;
+														RenderCustom(renderer, tex_blank,		NULL, &rect_blank);
+														RenderCustom(renderer, tex_BACKSPACE,	NULL, &rect_backspace); break;
 
-								case KEY_COMMA:			SDL_RenderCopy(renderer, tex_COMMA,		NULL, &rect_letters); break;
-								case KEY_DELETE:		SDL_RenderCopy(renderer, tex_DELETE,	NULL, &rect_letters); break;
-								case KEY_DOT:			SDL_RenderCopy(renderer, tex_DOT,		NULL, &rect_letters); break;
+								case KEY_COMMA:			RenderCustom(renderer, tex_COMMA,		NULL, &rect_letters); break;
+								case KEY_DELETE:		RenderCustom(renderer, tex_DELETE,	NULL, &rect_letters); break;
+								case KEY_DOT:			RenderCustom(renderer, tex_DOT,		NULL, &rect_letters); break;
 								case KEY_ENTER:			
 														update_window_width(FAC_ENTER);
-														SDL_RenderCopy(renderer, tex_blank,		NULL, &rect_blank);
-														SDL_RenderCopy(renderer, tex_ENTER,		NULL, &rect_enter); break;
-								case KEY_EQUAL:			SDL_RenderCopy(renderer, tex_EQUAL,		NULL, &rect_letters); break;
-								case KEY_ESC:			SDL_RenderCopy(renderer, tex_ESC,		NULL, &rect_letters); break;
-								case KEY_GRAVE:			SDL_RenderCopy(renderer, tex_GRAVE,		NULL, &rect_letters); break;
-								case KEY_LEFTBRACE:		SDL_RenderCopy(renderer, tex_LEFTBRACE,	NULL, &rect_letters); break;
-								case KEY_MINUS:			SDL_RenderCopy(renderer, tex_MINUS,		NULL, &rect_letters); break;
-								case KEY_RIGHTBRACE:	SDL_RenderCopy(renderer, tex_RIGHTBRACE,NULL, &rect_letters); break;
-								case KEY_SEMICOLON:		SDL_RenderCopy(renderer, tex_SEMICOLON,	NULL, &rect_letters); break;
-								case KEY_SLASH:			SDL_RenderCopy(renderer, tex_SLASH,		NULL, &rect_letters); break;
+														RenderCustom(renderer, tex_blank,		NULL, &rect_blank);
+														RenderCustom(renderer, tex_ENTER,		NULL, &rect_enter); break;
+								case KEY_EQUAL:			RenderCustom(renderer, tex_EQUAL,		NULL, &rect_letters); break;
+								case KEY_ESC:			RenderCustom(renderer, tex_ESC,		NULL, &rect_letters); break;
+								case KEY_GRAVE:			RenderCustom(renderer, tex_GRAVE,		NULL, &rect_letters); break;
+								case KEY_LEFTBRACE:		RenderCustom(renderer, tex_LEFTBRACE,	NULL, &rect_letters); break;
+								case KEY_MINUS:			RenderCustom(renderer, tex_MINUS,		NULL, &rect_letters); break;
+								case KEY_RIGHTBRACE:	RenderCustom(renderer, tex_RIGHTBRACE,NULL, &rect_letters); break;
+								case KEY_SEMICOLON:		RenderCustom(renderer, tex_SEMICOLON,	NULL, &rect_letters); break;
+								case KEY_SLASH:			RenderCustom(renderer, tex_SLASH,		NULL, &rect_letters); break;
 								case KEY_SPACE:			
 														update_window_width(FAC_SPACE);
-														SDL_RenderCopy(renderer, tex_blank,		NULL, &rect_blank);
-														SDL_RenderCopy(renderer, tex_SPACE,		NULL, &rect_space); break;
+														RenderCustom(renderer, tex_blank,		NULL, &rect_blank);
+														RenderCustom(renderer, tex_SPACE,		NULL, &rect_space); break;
 								case KEY_TAB:			
 														update_window_width(FAC_TAB);
-														SDL_RenderCopy(renderer, tex_blank,		NULL, &rect_blank);
-														SDL_RenderCopy(renderer, tex_TAB,		NULL, &rect_tab); break;
+														RenderCustom(renderer, tex_blank,		NULL, &rect_blank);
+														RenderCustom(renderer, tex_TAB,		NULL, &rect_tab); break;
 			
 								default: cout << "code:" << global_keyboard.code << endl;
-							}
-						}
-				}
+							} // switch (global_keyboard.code)
+						} // default: if (SHOW_LETTERS)
+				} // switch (global_keyboard.code)
 			}
 		}
 		check_show_window();
@@ -536,7 +542,7 @@ void mouse_loop()
 					update_window_hieght();
 					SDL_SetWindowSize(window, window_width, window_hieght);
 				}
-				if (check_mouse_clicked() == 0) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+				if (check_mouse_clicked() == 0) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
 			}
 			if (global_mouse.value == 1)
 			{
@@ -550,9 +556,9 @@ void mouse_loop()
 							window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 							update_window_hieght();
 							SDL_SetWindowSize(window, window_width, window_hieght);
-							if (ntrues_mouse() <= 1) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+							if (ntrues_mouse() <= 1) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
 						}
-						SDL_RenderCopy(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
+						RenderCustom(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
 						break;
 					case 273: // right click
 						if (TRANSPARENT_MODE)
@@ -562,9 +568,9 @@ void mouse_loop()
 							window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 							update_window_hieght();
 							SDL_SetWindowSize(window, window_width, window_hieght);
-							if (ntrues_mouse() <= 1) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+							if (ntrues_mouse() <= 1) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
 						}
-						SDL_RenderCopy(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
+						RenderCustom(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
 						break;
 					case 274: // middle wheel
 						if (TRANSPARENT_MODE)
@@ -574,9 +580,9 @@ void mouse_loop()
 							window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 							update_window_hieght();
 							SDL_SetWindowSize(window, window_width, window_hieght);
-							if (ntrues_mouse() <= 1) SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+							if (ntrues_mouse() <= 1) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
 						}
-						SDL_RenderCopy(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
+						RenderCustom(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
 						break;
 				}
 			}
@@ -594,14 +600,15 @@ void mouse_loop()
 			}
 			// checking if scrolled up
 			if (global_mouse.value == 120)
-				SDL_RenderCopy(renderer, tex_mouse_wheelup,  NULL, &rect_mouse);
+				RenderCustom(renderer, tex_mouse_wheelup,  NULL, &rect_mouse);
 			else // scrolled down
-				SDL_RenderCopy(renderer, tex_mouse_wheeldown,  NULL, &rect_mouse);
+				RenderCustom(renderer, tex_mouse_wheeldown,  NULL, &rect_mouse);
+
 
 			// to make the arrow show for a small period of time we should sleep then show the normal mouse image
 			// other wise the arrows will stay until a button is released
 			SDL_Delay(200);
-			SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+			RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
 			PRESSED_MOUSE[3] = false;
 		}
 		if (TRANSPARENT_MODE)
@@ -828,7 +835,11 @@ int main(int argc, char* argv[]) {
 		while (!close_program)
 		{
 			SDL_Delay(REFRESH_TIME);
-			SDL_RenderPresent(renderer);
+			if (NEED_REFRESH)
+			{
+				SDL_RenderPresent(renderer);
+				NEED_REFRESH = false;
+			}
 			while ( SDL_PollEvent( &sdl_input ) != 0 ) 
 			{
 				// checking if you want to close the app
@@ -845,7 +856,11 @@ int main(int argc, char* argv[]) {
 		while (!close_program)
 		{
 			SDL_Delay(REFRESH_TIME);
-			SDL_RenderPresent(renderer);
+			if (NEED_REFRESH)
+			{
+				SDL_RenderPresent(renderer);
+				NEED_REFRESH = false;
+			}
 			while ( SDL_PollEvent( &sdl_input ) != 0 ) 
 			{
 				// checking if you want to close the app
@@ -861,7 +876,11 @@ int main(int argc, char* argv[]) {
 		while (!close_program)
 		{
 			SDL_Delay(REFRESH_TIME);
-			SDL_RenderPresent(renderer);
+			if (NEED_REFRESH)
+			{
+				SDL_RenderPresent(renderer);
+				NEED_REFRESH = false;
+			}
 			while ( SDL_PollEvent( &sdl_input ) != 0 ) 
 			{
 				// checking if you want to close the app
