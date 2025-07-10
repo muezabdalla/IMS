@@ -209,8 +209,8 @@ void update_window_width(float factor)
 	{
 		window_width = ntrues_keyboard() * BUTTON_WIDTH;
 		if (SHOW_MOUSE) window_width += check_mouse_clicked() * MOUSE_WIDTH;
-		if (PRESSED_BUTTONS[4]) window_width = window_width - BUTTON_WIDTH + factor*BUTTON_WIDTH;
-
+		if (PRESSED_BUTTONS[4]) window_width = window_width - BUTTON_WIDTH + int(factor*BUTTON_WIDTH);
+		rect_tab.x = rect_space.x = rect_enter.x = rect_backspace.x = window_width - int(factor*BUTTON_WIDTH);
 	}
 	else
 	{
@@ -233,9 +233,9 @@ void update_window_width(float factor)
 		if ( (TRANSPARENT_MODE && check_mouse_clicked()) || (!TRANSPARENT_MODE) )
 			SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
 
-		if (PRESSED_BUTTONS[0]) SDL_RenderCopy(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
-		if (PRESSED_BUTTONS[1]) SDL_RenderCopy(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
-		if (PRESSED_BUTTONS[2]) SDL_RenderCopy(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
+		if (PRESSED_MOUSE[0]) SDL_RenderCopy(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
+		if (PRESSED_MOUSE[1]) SDL_RenderCopy(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
+		if (PRESSED_MOUSE[2]) SDL_RenderCopy(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
 	}
 	// updating the blank rectangle to use it
 	rect_blank = {rect_letters.x, 0, int(BUTTON_WIDTH*factor), window_hieght};
