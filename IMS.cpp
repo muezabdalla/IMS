@@ -852,8 +852,8 @@ int main(int argc, char* argv[]) {
 				if (sdl_input.type == SDL_QUIT) close_program =true;
 			}
 		}
-		#include "quit.h" // clear things and exit
 		keyboard_thread.join();
+		#include "quit.h" // clear things and exit
 	}
 	else // mouse only
 	{
@@ -868,7 +868,7 @@ int main(int argc, char* argv[]) {
 				if (sdl_input.type == SDL_QUIT) close_program =true;
 			}
 		}
-		#include "quit.h" // clear things and exit
 		mouse_thread.join();
+		#include "quit.h" // clear things and exit
 	}
 }
