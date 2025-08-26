@@ -6,14 +6,18 @@
 #include <filesystem> // to check if the input file exist
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 //#include <string>
 #include <thread>
+
+SDL_Window* window = NULL;
+SDL_Renderer* renderer = NULL;
 
 char KEYBOARD_FILE[22] =	"/dev/input/event";
 char MOUSE_FILE[22] =		"/dev/input/event";
 
 int BUTTON_WIDTH =	100;
-int BUTTON_HIEGHT =	60;
+int BUTTON_HIEGHT =	90;
 int MOUSE_WIDTH =	90;
 int MOUSE_HIEGHT =	90;
 int REFRESH_TIME =	50;
@@ -30,9 +34,16 @@ bool TRANSPARENT_MODE =	false;
 bool POS_RIGHT =		false; // when used the "-p right <something>"
 bool POS_BUTTOM =		false; // when used the "-p <something> buttom"
 bool NEED_REFRESH =		false; // to know if a refresh is needed
-void RenderCustom(SDL_Renderer * rendererT, SDL_Texture * textureT, const SDL_Rect * srcRectT, const SDL_Rect * dstRectT)
+void RenderCustom(SDL_Texture * textureT, const SDL_Rect * dstRectT)
 {
-	SDL_RenderCopy(rendererT, textureT,  srcRectT, dstRectT);
+	SDL_RenderCopy(renderer, textureT,  NULL, dstRectT);
+	NEED_REFRESH = true;
+}
+// to render the button and then the letter
+void RenderLetters(SDL_Texture * textureT, const SDL_Rect * dstRectT, SDL_Texture * textureT2, const SDL_Rect * dstRectT2)
+{
+	SDL_RenderCopy(renderer, textureT,  NULL, dstRectT);
+	SDL_RenderCopy(renderer, textureT2,  NULL, dstRectT2);
 	NEED_REFRESH = true;
 }
 
@@ -53,14 +64,23 @@ using namespace std;
 
 string current_path;
 string image_absolute_path;
-
-SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
+string font_path;
+string font_absolute_path;
+TTF_Font* font;
+SDL_Color font_color;
+// the offsets for the characters inside the buttons
+int horizontal_offset = 15;
+int vertical_offset = 15;
 
 // blank surface to hide the defects
 SDL_Rect rect_blank;
 SDL_Surface* sur_blank = NULL;
 SDL_Texture* tex_blank = NULL;
+// the backgraound color
+#define BG_COLOR_R 110
+#define BG_COLOR_G 188
+#define BG_COLOR_B 197
+#define BG_COLOR_A 255
 
 
 // the x,y positons and width and hieght on the window
@@ -76,16 +96,26 @@ SDL_Rect rect_enter;
 SDL_Rect rect_space;
 SDL_Rect rect_tab;
 
+// the offseted rectangles (inside the original) (used for the text)
+SDL_Rect rect_offset_ctrl;
+SDL_Rect rect_offset_shift;
+SDL_Rect rect_offset_super;
+SDL_Rect rect_offset_alt;
+SDL_Rect rect_offset_letters;
+SDL_Rect rect_offset_mouse;
+// spetial rectangles for the letters that have factors
+SDL_Rect rect_offset_backspace;
+SDL_Rect rect_offset_enter;
+SDL_Rect rect_offset_space;
+SDL_Rect rect_offset_tab;
+
 // initializing outside the if statments to be able to use them
 SDL_Texture* tex_ctrl =		NULL;
-SDL_Texture* tex_ctrlP =	NULL;
 SDL_Texture* tex_shift =	NULL;
-SDL_Texture* tex_shiftP =	NULL;
 SDL_Texture* tex_super =	NULL;
-SDL_Texture* tex_superP =	NULL;
 SDL_Texture* tex_alt =		NULL;
-SDL_Texture* tex_altP =		NULL;
 SDL_Texture* tex_general =	NULL;
+SDL_Texture* tex_generalP =	NULL;
 SDL_Texture* tex_mouse =			NULL;
 SDL_Texture* tex_mouse_rightP =		NULL;
 SDL_Texture* tex_mouse_leftP =		NULL;
@@ -217,6 +247,7 @@ void update_window_width(float factor)
 		if (SHOW_MOUSE) window_width += check_mouse_clicked() * MOUSE_WIDTH;
 		if (PRESSED_BUTTONS[4]) window_width = window_width - BUTTON_WIDTH + int(factor*BUTTON_WIDTH);
 		rect_tab.x = rect_space.x = rect_enter.x = rect_backspace.x = window_width - int(factor*BUTTON_WIDTH);
+		rect_offset_letters.x = rect_tab.x + horizontal_offset;
 	}
 	else
 	{
@@ -232,37 +263,46 @@ void update_window_width(float factor)
 		/*
 		if (TRANSPARENT_MODE)
 		{
-			if (check_mouse_clicked() == 1) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
+			if (check_mouse_clicked() == 1) RenderCustom(tex_mouse, &rect_mouse);
 		}
-		else RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
+		else RenderCustom(tex_mouse, &rect_mouse);
 		*/
 		if ( (TRANSPARENT_MODE && check_mouse_clicked()) || (!TRANSPARENT_MODE) )
-			RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
+			RenderCustom(tex_mouse, &rect_mouse);
 
-		if (PRESSED_MOUSE[0]) RenderCustom(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
-		if (PRESSED_MOUSE[1]) RenderCustom(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
-		if (PRESSED_MOUSE[2]) RenderCustom(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
+		if (PRESSED_MOUSE[0]) RenderCustom(tex_mouse_leftP, &rect_mouse);
+		if (PRESSED_MOUSE[1]) RenderCustom(tex_mouse_rightP, &rect_mouse);
+		if (PRESSED_MOUSE[2]) RenderCustom(tex_mouse_wheelP, &rect_mouse);
 	}
 	// updating the blank rectangle to use it
 	rect_blank = {rect_letters.x, 0, int(BUTTON_WIDTH*factor), window_hieght};
 }
 
-void imageToTexture(string image_path, SDL_Texture* &tex_temp, SDL_Renderer* renderer_temp)
+void imageToTexture(string image_path, SDL_Texture* &tex_temp)
 {
-	image_absolute_path = current_path + image_path;
-	if (!std::filesystem::is_regular_file(image_absolute_path))
+	if (!filesystem::is_regular_file(image_path))
 	{
 		cout << "file\"" << image_absolute_path << "\" does not exist" << endl;
 		exit(0);
 	}
-	// this is to convert a string to a const char * to be able to use it in IMG_Load
-	const char * image_path_converted = image_absolute_path.c_str();
 	// making the surfaces from the images
-	SDL_Surface* sur_temp =	IMG_Load(image_path_converted);
+	SDL_Surface* sur_temp =	IMG_Load(image_path.c_str());
 	// making the texture from the surfaces
-	tex_temp = SDL_CreateTextureFromSurface(renderer_temp, sur_temp);
+	tex_temp = SDL_CreateTextureFromSurface(renderer, sur_temp);
 	// we do not need the surfaces from now so we freed them
 	SDL_FreeSurface(sur_temp);
+}
+
+void wordToTexture(const char* word, SDL_Texture* &tex_temp)
+{
+	// Render Latin1 text at fast quality to a new 8-bit surface.
+	//SDL_Surface* sur_text = TTF_RenderText_Solid(font, "Text", font_color);
+	// Render Latin1 text at high quality to a new ARGB surface.
+	SDL_Surface* sur_text_temp = TTF_RenderText_Blended(font, word, font_color);
+
+	tex_temp = SDL_CreateTextureFromSurface(renderer, sur_text_temp);
+
+	SDL_FreeSurface(sur_text_temp);
 }
 
 void print_help() 
@@ -308,7 +348,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else RenderCustom(renderer, tex_ctrl,  NULL, &rect_ctrl);
+							else RenderLetters(tex_general, &rect_ctrl, tex_ctrl, &rect_offset_ctrl);
 						}
 						break;
 					case KEY_RIGHTSHIFT:
@@ -321,7 +361,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else RenderCustom(renderer, tex_shift,  NULL, &rect_shift);
+							else RenderLetters(tex_general, &rect_shift, tex_shift, &rect_offset_shift);
 						}
 						break;
 					case KEY_LEFTMETA:
@@ -333,7 +373,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else RenderCustom(renderer, tex_super,  NULL, &rect_super);
+							else RenderLetters(tex_general, &rect_super, tex_super, &rect_offset_super);
 						}
 						break;
 					case KEY_RIGHTALT:
@@ -346,7 +386,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else RenderCustom(renderer, tex_alt,  NULL, &rect_alt);
+							else RenderLetters(tex_general, &rect_alt, tex_alt, &rect_offset_alt);
 						}
 						break;
 					default:
@@ -358,7 +398,7 @@ void keyboard_loop()
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							else RenderCustom(renderer, tex_general,  NULL, &rect_letters);
+							else RenderCustom(tex_general, &rect_letters);
 							// returning the size of the window for the large keys
 							if (global_keyboard.code == KEY_BACKSPACE || 
 								global_keyboard.code == KEY_ENTER || 
@@ -379,11 +419,12 @@ void keyboard_loop()
 							if (TRANSPARENT_MODE)
 							{
 								rect_ctrl.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								rect_offset_ctrl.x = rect_ctrl.x + horizontal_offset;
 								PRESSED_BUTTONS[0] = true;
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							RenderCustom(renderer, tex_ctrlP,  NULL, &rect_ctrl);
+							RenderLetters(tex_generalP, &rect_ctrl, tex_ctrl, &rect_offset_ctrl);
 						}
 						break;
 					case KEY_RIGHTSHIFT:
@@ -393,11 +434,12 @@ void keyboard_loop()
 							if (TRANSPARENT_MODE)
 							{
 								rect_shift.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								rect_offset_shift.x = rect_shift.x + horizontal_offset;
 								PRESSED_BUTTONS[1] = true;
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							RenderCustom(renderer, tex_shiftP,  NULL, &rect_shift);
+							RenderLetters(tex_generalP, &rect_shift, tex_shift, &rect_offset_shift);
 						}
 						break;
 					case KEY_LEFTMETA:
@@ -406,11 +448,12 @@ void keyboard_loop()
 							if (TRANSPARENT_MODE)
 							{
 								rect_super.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								rect_offset_super.x = rect_super.x + horizontal_offset;
 								PRESSED_BUTTONS[2] = true;
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							RenderCustom(renderer, tex_superP,  NULL, &rect_super);
+							RenderLetters(tex_generalP, &rect_super, tex_super, &rect_offset_super);
 						}
 						break;
 					case KEY_RIGHTALT:
@@ -420,11 +463,12 @@ void keyboard_loop()
 							if (TRANSPARENT_MODE)
 							{
 								rect_alt.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								rect_offset_alt.x = rect_alt.x + horizontal_offset;
 								PRESSED_BUTTONS[3] = true;
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
-							RenderCustom(renderer, tex_altP,  NULL, &rect_alt);
+							RenderLetters(tex_generalP, &rect_alt, tex_alt, &rect_offset_alt);
 						}
 						break;
 					// the boring part of checking all the letters
@@ -433,78 +477,80 @@ void keyboard_loop()
 							if (TRANSPARENT_MODE)
 							{
 								rect_letters.x = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
+								rect_offset_letters.x = rect_letters.x + horizontal_offset;
 								PRESSED_BUTTONS[4] = true;
 								window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
+							RenderCustom(tex_generalP, &rect_letters);
 							switch (global_keyboard.code)
 							{
-								case KEY_A:				RenderCustom(renderer, tex_A,			NULL, &rect_letters); break;
-								case KEY_B:				RenderCustom(renderer, tex_B,			NULL, &rect_letters); break;
-								case KEY_C:				RenderCustom(renderer, tex_C,			NULL, &rect_letters); break;
-								case KEY_D:				RenderCustom(renderer, tex_D,			NULL, &rect_letters); break;
-								case KEY_E:				RenderCustom(renderer, tex_E,			NULL, &rect_letters); break;
-								case KEY_F:				RenderCustom(renderer, tex_F,			NULL, &rect_letters); break;
-								case KEY_G:				RenderCustom(renderer, tex_G,			NULL, &rect_letters); break;
-								case KEY_H:				RenderCustom(renderer, tex_H,			NULL, &rect_letters); break;
-								case KEY_I:				RenderCustom(renderer, tex_I,			NULL, &rect_letters); break;
-								case KEY_J:				RenderCustom(renderer, tex_J,			NULL, &rect_letters); break;
-								case KEY_K:				RenderCustom(renderer, tex_K,			NULL, &rect_letters); break;
-								case KEY_L:				RenderCustom(renderer, tex_L,			NULL, &rect_letters); break;
-								case KEY_M:				RenderCustom(renderer, tex_M,			NULL, &rect_letters); break;
-								case KEY_N:				RenderCustom(renderer, tex_N,			NULL, &rect_letters); break;
-								case KEY_O:				RenderCustom(renderer, tex_O,			NULL, &rect_letters); break;
-								case KEY_P:				RenderCustom(renderer, tex_P,			NULL, &rect_letters); break;
-								case KEY_Q:				RenderCustom(renderer, tex_Q,			NULL, &rect_letters); break;
-								case KEY_R:				RenderCustom(renderer, tex_R,			NULL, &rect_letters); break;
-								case KEY_S:				RenderCustom(renderer, tex_S,			NULL, &rect_letters); break;
-								case KEY_T:				RenderCustom(renderer, tex_T,			NULL, &rect_letters); break;
-								case KEY_U:				RenderCustom(renderer, tex_U,			NULL, &rect_letters); break;
-								case KEY_V:				RenderCustom(renderer, tex_V,			NULL, &rect_letters); break;
-								case KEY_W:				RenderCustom(renderer, tex_W,			NULL, &rect_letters); break;
-								case KEY_X:				RenderCustom(renderer, tex_X,			NULL, &rect_letters); break;
-								case KEY_Y:				RenderCustom(renderer, tex_Y,			NULL, &rect_letters); break;
-								case KEY_Z:				RenderCustom(renderer, tex_Z,			NULL, &rect_letters); break;
-								case KEY_0:				RenderCustom(renderer, tex_0,			NULL, &rect_letters); break;
-								case KEY_1:				RenderCustom(renderer, tex_1,			NULL, &rect_letters); break;
-								case KEY_2:				RenderCustom(renderer, tex_2,			NULL, &rect_letters); break;
-								case KEY_3:				RenderCustom(renderer, tex_3,			NULL, &rect_letters); break;
-								case KEY_4:				RenderCustom(renderer, tex_4,			NULL, &rect_letters); break;
-								case KEY_5:				RenderCustom(renderer, tex_5,			NULL, &rect_letters); break;
-								case KEY_6:				RenderCustom(renderer, tex_6,			NULL, &rect_letters); break;
-								case KEY_7:				RenderCustom(renderer, tex_7,			NULL, &rect_letters); break;
-								case KEY_8:				RenderCustom(renderer, tex_8,			NULL, &rect_letters); break;
-								case KEY_9:				RenderCustom(renderer, tex_9,			NULL, &rect_letters); break;
-								case KEY_APOSTROPHE:	RenderCustom(renderer, tex_APOSTROPHE,NULL, &rect_letters); break;
-								case KEY_BACKSLASH:		RenderCustom(renderer, tex_BACKSLASH,	NULL, &rect_letters); break;
+								case KEY_A:				RenderCustom(tex_A,			&rect_offset_letters); break;
+								case KEY_B:				RenderCustom(tex_B,			&rect_offset_letters); break;
+								case KEY_C:				RenderCustom(tex_C,			&rect_offset_letters); break;
+								case KEY_D:				RenderCustom(tex_D,			&rect_offset_letters); break;
+								case KEY_E:				RenderCustom(tex_E,			&rect_offset_letters); break;
+								case KEY_F:				RenderCustom(tex_F,			&rect_offset_letters); break;
+								case KEY_G:				RenderCustom(tex_G,			&rect_offset_letters); break;
+								case KEY_H:				RenderCustom(tex_H,			&rect_offset_letters); break;
+								case KEY_I:				RenderCustom(tex_I,			&rect_offset_letters); break;
+								case KEY_J:				RenderCustom(tex_J,			&rect_offset_letters); break;
+								case KEY_K:				RenderCustom(tex_K,			&rect_offset_letters); break;
+								case KEY_L:				RenderCustom(tex_L,			&rect_offset_letters); break;
+								case KEY_M:				RenderCustom(tex_M,			&rect_offset_letters); break;
+								case KEY_N:				RenderCustom(tex_N,			&rect_offset_letters); break;
+								case KEY_O:				RenderCustom(tex_O,			&rect_offset_letters); break;
+								case KEY_P:				RenderCustom(tex_P,			&rect_offset_letters); break;
+								case KEY_Q:				RenderCustom(tex_Q,			&rect_offset_letters); break;
+								case KEY_R:				RenderCustom(tex_R,			&rect_offset_letters); break;
+								case KEY_S:				RenderCustom(tex_S,			&rect_offset_letters); break;
+								case KEY_T:				RenderCustom(tex_T,			&rect_offset_letters); break;
+								case KEY_U:				RenderCustom(tex_U,			&rect_offset_letters); break;
+								case KEY_V:				RenderCustom(tex_V,			&rect_offset_letters); break;
+								case KEY_W:				RenderCustom(tex_W,			&rect_offset_letters); break;
+								case KEY_X:				RenderCustom(tex_X,			&rect_offset_letters); break;
+								case KEY_Y:				RenderCustom(tex_Y,			&rect_offset_letters); break;
+								case KEY_Z:				RenderCustom(tex_Z,			&rect_offset_letters); break;
+								case KEY_0:				RenderCustom(tex_0,			&rect_offset_letters); break;
+								case KEY_1:				RenderCustom(tex_1,			&rect_offset_letters); break;
+								case KEY_2:				RenderCustom(tex_2,			&rect_offset_letters); break;
+								case KEY_3:				RenderCustom(tex_3,			&rect_offset_letters); break;
+								case KEY_4:				RenderCustom(tex_4,			&rect_offset_letters); break;
+								case KEY_5:				RenderCustom(tex_5,			&rect_offset_letters); break;
+								case KEY_6:				RenderCustom(tex_6,			&rect_offset_letters); break;
+								case KEY_7:				RenderCustom(tex_7,			&rect_offset_letters); break;
+								case KEY_8:				RenderCustom(tex_8,			&rect_offset_letters); break;
+								case KEY_9:				RenderCustom(tex_9,			&rect_offset_letters); break;
+								case KEY_APOSTROPHE:	RenderCustom(tex_APOSTROPHE,&rect_offset_letters); break;
+								case KEY_BACKSLASH:		RenderCustom(tex_BACKSLASH,	&rect_offset_letters); break;
 								case KEY_BACKSPACE:
 														update_window_width(FAC_BACKSPACE);
-														RenderCustom(renderer, tex_blank,		NULL, &rect_blank);
-														RenderCustom(renderer, tex_BACKSPACE,	NULL, &rect_backspace); break;
+														RenderCustom(tex_blank, &rect_blank);
+														RenderLetters(tex_generalP,	&rect_backspace, tex_BACKSPACE, &rect_offset_backspace); break;
 
-								case KEY_COMMA:			RenderCustom(renderer, tex_COMMA,		NULL, &rect_letters); break;
-								case KEY_DELETE:		RenderCustom(renderer, tex_DELETE,	NULL, &rect_letters); break;
-								case KEY_DOT:			RenderCustom(renderer, tex_DOT,		NULL, &rect_letters); break;
+								case KEY_COMMA:			RenderCustom(tex_COMMA, &rect_letters); break;
+								case KEY_DELETE:		RenderCustom(tex_DELETE, &rect_letters); break;
+								case KEY_DOT:			RenderCustom(tex_DOT, &rect_letters); break;
 								case KEY_ENTER:			
 														update_window_width(FAC_ENTER);
-														RenderCustom(renderer, tex_blank,		NULL, &rect_blank);
-														RenderCustom(renderer, tex_ENTER,		NULL, &rect_enter); break;
-								case KEY_EQUAL:			RenderCustom(renderer, tex_EQUAL,		NULL, &rect_letters); break;
-								case KEY_ESC:			RenderCustom(renderer, tex_ESC,		NULL, &rect_letters); break;
-								case KEY_GRAVE:			RenderCustom(renderer, tex_GRAVE,		NULL, &rect_letters); break;
-								case KEY_LEFTBRACE:		RenderCustom(renderer, tex_LEFTBRACE,	NULL, &rect_letters); break;
-								case KEY_MINUS:			RenderCustom(renderer, tex_MINUS,		NULL, &rect_letters); break;
-								case KEY_RIGHTBRACE:	RenderCustom(renderer, tex_RIGHTBRACE,NULL, &rect_letters); break;
-								case KEY_SEMICOLON:		RenderCustom(renderer, tex_SEMICOLON,	NULL, &rect_letters); break;
-								case KEY_SLASH:			RenderCustom(renderer, tex_SLASH,		NULL, &rect_letters); break;
+														RenderCustom(tex_blank, &rect_blank);
+														RenderLetters(tex_generalP,	&rect_enter, tex_ENTER,	&rect_offset_enter); break;
+								case KEY_EQUAL:			RenderCustom(tex_EQUAL, &rect_offset_letters); break;
+								case KEY_ESC:			RenderCustom(tex_ESC,		&rect_offset_letters); break;
+								case KEY_GRAVE:			RenderCustom(tex_GRAVE,		&rect_offset_letters); break;
+								case KEY_LEFTBRACE:		RenderCustom(tex_LEFTBRACE,	&rect_offset_letters); break;
+								case KEY_MINUS:			RenderCustom(tex_MINUS,		&rect_offset_letters); break;
+								case KEY_RIGHTBRACE:	RenderCustom(tex_RIGHTBRACE,&rect_offset_letters); break;
+								case KEY_SEMICOLON:		RenderCustom(tex_SEMICOLON,	&rect_offset_letters); break;
+								case KEY_SLASH:			RenderCustom(tex_SLASH,		&rect_offset_letters); break;
 								case KEY_SPACE:			
 														update_window_width(FAC_SPACE);
-														RenderCustom(renderer, tex_blank,		NULL, &rect_blank);
-														RenderCustom(renderer, tex_SPACE,		NULL, &rect_space); break;
+														RenderCustom(tex_blank, &rect_blank);
+														RenderLetters(tex_generalP,	&rect_space, tex_SPACE,	&rect_offset_space); break;
 								case KEY_TAB:			
 														update_window_width(FAC_TAB);
-														RenderCustom(renderer, tex_blank,		NULL, &rect_blank);
-														RenderCustom(renderer, tex_TAB,		NULL, &rect_tab); break;
+														RenderCustom(tex_blank, &rect_blank);
+														RenderLetters(tex_generalP,	&rect_tab, tex_TAB,	&rect_offset_tab); break;
 			
 								default: cout << "code:" << global_keyboard.code << endl;
 							} // switch (global_keyboard.code)
@@ -542,7 +588,7 @@ void mouse_loop()
 					update_window_hieght();
 					SDL_SetWindowSize(window, window_width, window_hieght);
 				}
-				if (check_mouse_clicked() == 0) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
+				if (check_mouse_clicked() == 0) RenderCustom(tex_mouse, &rect_mouse);
 			}
 			if (global_mouse.value == 1)
 			{
@@ -556,9 +602,9 @@ void mouse_loop()
 							window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 							update_window_hieght();
 							SDL_SetWindowSize(window, window_width, window_hieght);
-							if (ntrues_mouse() <= 1) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
+							if (ntrues_mouse() <= 1) RenderCustom(tex_mouse, &rect_mouse);
 						}
-						RenderCustom(renderer, tex_mouse_leftP,  NULL, &rect_mouse);
+						RenderCustom(tex_mouse_leftP, &rect_mouse);
 						break;
 					case 273: // right click
 						if (TRANSPARENT_MODE)
@@ -568,9 +614,9 @@ void mouse_loop()
 							window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 							update_window_hieght();
 							SDL_SetWindowSize(window, window_width, window_hieght);
-							if (ntrues_mouse() <= 1) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
+							if (ntrues_mouse() <= 1) RenderCustom(tex_mouse, &rect_mouse);
 						}
-						RenderCustom(renderer, tex_mouse_rightP,  NULL, &rect_mouse);
+						RenderCustom(tex_mouse_rightP, &rect_mouse);
 						break;
 					case 274: // middle wheel
 						if (TRANSPARENT_MODE)
@@ -580,9 +626,9 @@ void mouse_loop()
 							window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 							update_window_hieght();
 							SDL_SetWindowSize(window, window_width, window_hieght);
-							if (ntrues_mouse() <= 1) RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
+							if (ntrues_mouse() <= 1) RenderCustom(tex_mouse, &rect_mouse);
 						}
-						RenderCustom(renderer, tex_mouse_wheelP,  NULL, &rect_mouse);
+						RenderCustom(tex_mouse_wheelP, &rect_mouse);
 						break;
 				}
 			}
@@ -600,15 +646,15 @@ void mouse_loop()
 			}
 			// checking if scrolled up
 			if (global_mouse.value == 120)
-				RenderCustom(renderer, tex_mouse_wheelup,  NULL, &rect_mouse);
+				RenderCustom(tex_mouse_wheelup, &rect_mouse);
 			else // scrolled down
-				RenderCustom(renderer, tex_mouse_wheeldown,  NULL, &rect_mouse);
+				RenderCustom(tex_mouse_wheeldown, &rect_mouse);
 
 
 			// to make the arrow show for a small period of time we should sleep then show the normal mouse image
 			// other wise the arrows will stay until a button is released
 			SDL_Delay(200);
-			RenderCustom(renderer, tex_mouse,  NULL, &rect_mouse);
+			RenderCustom(tex_mouse, &rect_mouse);
 			PRESSED_MOUSE[3] = false;
 		}
 		if (TRANSPARENT_MODE)
@@ -621,6 +667,11 @@ void mouse_loop()
 
 int main(int argc, char* argv[]) {
 
+	if ( SDL_Init( SDL_INIT_EVENTS ) < 0 ) {
+		cout << "Error initializing SDL: " << SDL_GetError() << endl;
+		return 1;
+	} 
+
 	// detecting the event files for keyboard and mouse
 	char keyboard_number =	get_command_output("ls /dev/input/by-path/ -la | grep -o \"event-kbd -> ../event[0-9]*\" | grep -o \"[0-9]*\" | head -1");
 	char mouse_number =		get_command_output("ls /dev/input/by-path/ -la | grep -o \"event-mouse -> ../event[0-9]*\" | grep -o \"[0-9]*\" | head -1");
@@ -630,6 +681,16 @@ int main(int argc, char* argv[]) {
 	current_path = argv[0];
 	// remove last seven chars(IMS) by subtracting totall length - 3
 	current_path.erase(current_path.length() - 3);
+
+	TTF_Init();
+
+	if (filesystem::is_regular_file("~/.config/IMS/font.ttf"))
+		font_path = "~/.config/IMS/font.ttf";
+	else
+		font_path = current_path+"resources/font.ttf";
+
+	font = TTF_OpenFont(font_path.c_str(), 52);
+	font_color = {255, 255, 255};
 
 	// variables for handing arguments
 	int i;
@@ -641,21 +702,25 @@ int main(int argc, char* argv[]) {
 	if (SHOW_CTRL) 
 	{
 		rect_ctrl =		{nButtons*BUTTON_WIDTH, 0, BUTTON_WIDTH, BUTTON_HIEGHT}; 
+		rect_offset_ctrl = {rect_ctrl.x+horizontal_offset, rect_ctrl.y+vertical_offset, rect_ctrl.w-2*horizontal_offset, rect_ctrl.h-2*vertical_offset};    
 		nButtons++;
 	}
 	if (SHOW_SHIFT)
 	{
 		rect_shift =	{nButtons*BUTTON_WIDTH, 0, BUTTON_WIDTH, BUTTON_HIEGHT}; 
+		rect_offset_shift = {rect_shift.x+horizontal_offset, rect_shift.y+vertical_offset, rect_shift.w-2*horizontal_offset, rect_shift.h-2*vertical_offset};    
 		nButtons++;
 	}
 	if (SHOW_SUPER)
 	{
 		rect_super =	{nButtons*BUTTON_WIDTH, 0, BUTTON_WIDTH, BUTTON_HIEGHT}; 
+		rect_offset_super = {rect_super.x+horizontal_offset, rect_super.y+vertical_offset, rect_super.w-2*horizontal_offset, rect_super.h-2*vertical_offset};    
 		nButtons++;
 	}
 	if (SHOW_ALT)
 	{
 		rect_alt =		{nButtons*BUTTON_WIDTH, 0, BUTTON_WIDTH, BUTTON_HIEGHT}; 
+		rect_offset_alt = {rect_alt.x+horizontal_offset, rect_alt.y+vertical_offset, rect_alt.w-2*horizontal_offset, rect_alt.h-2*vertical_offset};    
 		nButtons++;
 	}
 	if (SHOW_LETTERS)
@@ -665,6 +730,11 @@ int main(int argc, char* argv[]) {
 		rect_enter =		{nButtons*BUTTON_WIDTH, 0, int(BUTTON_WIDTH*FAC_ENTER), BUTTON_HIEGHT};
 		rect_space =		{nButtons*BUTTON_WIDTH, 0, int(BUTTON_WIDTH*FAC_SPACE), BUTTON_HIEGHT};
 		rect_tab =			{nButtons*BUTTON_WIDTH, 0, int(BUTTON_WIDTH*FAC_TAB), BUTTON_HIEGHT};
+		rect_offset_letters = {rect_letters.x+horizontal_offset, rect_letters.y+vertical_offset, rect_letters.w-2*horizontal_offset, rect_letters.h-2*vertical_offset};    
+		rect_offset_backspace = {rect_backspace.x+horizontal_offset, rect_backspace.y+vertical_offset, rect_backspace.w-2*horizontal_offset, rect_backspace.h-2*vertical_offset};    
+		rect_offset_enter = {rect_enter.x+horizontal_offset, rect_enter.y+vertical_offset, rect_enter.w-2*horizontal_offset, rect_enter.h-2*vertical_offset};    
+		rect_offset_space = {rect_space.x+horizontal_offset, rect_space.y+vertical_offset, rect_space.w-2*horizontal_offset, rect_space.h-2*vertical_offset};    
+		rect_offset_tab = {rect_tab.x+horizontal_offset, rect_tab.y+vertical_offset, rect_tab.w-2*horizontal_offset, rect_tab.h-2*vertical_offset};    
 		nButtons++;
 	}
 	if (SHOW_MOUSE)
@@ -697,60 +767,71 @@ int main(int argc, char* argv[]) {
 		update_window_hieght();
 		window = SDL_CreateWindow("IMS", X, Y, window_width, window_hieght, SDL_WINDOW_TOOLTIP | SDL_WINDOW_ALWAYS_ON_TOP);
 	}
-	renderer = SDL_CreateRenderer(window, -1, 0);
+	renderer = SDL_CreateRenderer(window, 3, 0);
 	// initializing the blank texture
 	sur_blank = SDL_GetWindowSurface(window);
-	SDL_FillRect(sur_blank, NULL, SDL_MapRGB(sur_blank->format, 0, 0, 0));
+	SDL_FillRect(sur_blank, NULL, SDL_MapRGB(sur_blank->format, BG_COLOR_R, BG_COLOR_G, BG_COLOR_B));
 	tex_blank = SDL_CreateTextureFromSurface(renderer, sur_blank);
+	// display the background color
+	SDL_SetRenderDrawColor(renderer, BG_COLOR_R, BG_COLOR_G, BG_COLOR_B, BG_COLOR_A);
 
+	if (SHOW_KEYBOARD)
+	{
+		if (filesystem::is_regular_file("~/.config/IMS/button.png"))
+			imageToTexture("~/.config/IMS/button.png", tex_general);
+		else
+			imageToTexture(current_path+"resources/button.png", tex_general);
+
+		if (filesystem::is_regular_file("~/.config/IMS/buttonP.png"))
+			imageToTexture("~/.config/IMS/buttonP.png", tex_generalP);
+		else
+			imageToTexture(current_path+"resources/buttonP.png", tex_generalP);
+	}
 	if (SHOW_CTRL) 
 	{
 		// making the surfaces from the images
-		imageToTexture("resources/ctrl.png", tex_ctrl, renderer);
-		imageToTexture("resources/ctrlP.png", tex_ctrlP, renderer); // P is short for pressed
+		wordToTexture("ctrl", tex_ctrl);
 		// render the normal button at the beginning
-		SDL_RenderCopy(renderer, tex_ctrl,  NULL, &rect_ctrl);
+		RenderLetters(tex_general,  &rect_ctrl, tex_ctrl, &rect_offset_ctrl);
 	}
 	if (SHOW_SHIFT) 
 	{
 		// making the surfaces from the images
-		imageToTexture("resources/shift.png", tex_shift, renderer);
-		imageToTexture("resources/shiftP.png", tex_shiftP, renderer); // P is short for pressed
+		wordToTexture("shift", tex_shift);
 		// render the normal button at the beginning
-		SDL_RenderCopy(renderer, tex_shift,  NULL, &rect_shift);
+		RenderLetters(tex_general,  &rect_shift, tex_shift,  &rect_offset_shift);
 	}
 	if (SHOW_SUPER) 
 	{
 		// making the surfaces from the images
-		imageToTexture("resources/super.png", tex_super, renderer);
-		imageToTexture("resources/superP.png", tex_superP, renderer); // P is short for pressed
+		if (filesystem::is_regular_file("~/.config/IMS/Meta.png"))
+			imageToTexture("~/.config/IMS/Meta.png", tex_super);
+		else
+			imageToTexture(current_path+"resources/Meta.png", tex_super);
 		// render the normal button at the beginning
-		SDL_RenderCopy(renderer, tex_super,  NULL, &rect_super);
+		RenderLetters(tex_general,  &rect_super, tex_super,  &rect_offset_super);
 	}
 	if (SHOW_ALT) 
 	{
 		// making the surfaces from the images
-		imageToTexture("resources/alt.png", tex_alt, renderer);
-		imageToTexture("resources/altP.png", tex_altP, renderer); // P is short for pressed
+		wordToTexture("alt", tex_alt);
 		// render the normal button at the beginning
-		SDL_RenderCopy(renderer, tex_alt,  NULL, &rect_alt);
+		RenderLetters(tex_general,  &rect_alt, tex_alt,  &rect_offset_alt);
 	}
 	if (SHOW_LETTERS) 
 	{
-		// making the surfaces from the images
-		imageToTexture("resources/general_button.png", tex_general, renderer);
 		// render the normal button at the beginning
 		SDL_RenderCopy(renderer, tex_general,  NULL, &rect_letters);
 	}
 	if (SHOW_MOUSE)
 	{
 		// making the surfaces from the images
-		imageToTexture("resources/mouse.png", tex_mouse, renderer);
-		imageToTexture("resources/mouse_rightP.png", tex_mouse_rightP, renderer);
-		imageToTexture("resources/mouse_leftP.png", tex_mouse_leftP, renderer);
-		imageToTexture("resources/mouse_wheelP.png", tex_mouse_wheelP, renderer);
-		imageToTexture("resources/mouse_wheelup.png", tex_mouse_wheelup, renderer);
-		imageToTexture("resources/mouse_wheeldown.png", tex_mouse_wheeldown, renderer);
+		imageToTexture(current_path+"resources/mouse.png", tex_mouse);
+		imageToTexture(current_path+"resources/mouse_rightP.png", tex_mouse_rightP);
+		imageToTexture(current_path+"resources/mouse_leftP.png", tex_mouse_leftP);
+		imageToTexture(current_path+"resources/mouse_wheelP.png", tex_mouse_wheelP);
+		imageToTexture(current_path+"resources/mouse_wheelup.png", tex_mouse_wheelup);
+		imageToTexture(current_path+"resources/mouse_wheeldown.png", tex_mouse_wheeldown);
 		// render the normal button at the beginning
 		SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
 	}
@@ -760,59 +841,59 @@ int main(int argc, char* argv[]) {
 	if (SHOW_LETTERS)
 	{
 		// the boring part of initializing all the letters
-		imageToTexture("resources/letters/A.png", tex_A, renderer);
-		imageToTexture("resources/letters/B.png", tex_B, renderer);
-		imageToTexture("resources/letters/C.png", tex_C, renderer);
-		imageToTexture("resources/letters/D.png", tex_D, renderer);
-		imageToTexture("resources/letters/E.png", tex_E, renderer);
-		imageToTexture("resources/letters/F.png", tex_F, renderer);
-		imageToTexture("resources/letters/G.png", tex_G, renderer);
-		imageToTexture("resources/letters/H.png", tex_H, renderer);
-		imageToTexture("resources/letters/I.png", tex_I, renderer);
-		imageToTexture("resources/letters/J.png", tex_J, renderer);
-		imageToTexture("resources/letters/K.png", tex_K, renderer);
-		imageToTexture("resources/letters/L.png", tex_L, renderer);
-		imageToTexture("resources/letters/M.png", tex_M, renderer);
-		imageToTexture("resources/letters/N.png", tex_N, renderer);
-		imageToTexture("resources/letters/O.png", tex_O, renderer);
-		imageToTexture("resources/letters/P.png", tex_P, renderer);
-		imageToTexture("resources/letters/Q.png", tex_Q, renderer);
-		imageToTexture("resources/letters/R.png", tex_R, renderer);
-		imageToTexture("resources/letters/S.png", tex_S, renderer);
-		imageToTexture("resources/letters/T.png", tex_T, renderer);
-		imageToTexture("resources/letters/U.png", tex_U, renderer);
-		imageToTexture("resources/letters/V.png", tex_V, renderer);
-		imageToTexture("resources/letters/W.png", tex_W, renderer);
-		imageToTexture("resources/letters/X.png", tex_X, renderer);
-		imageToTexture("resources/letters/Y.png", tex_Y, renderer);
-		imageToTexture("resources/letters/Z.png", tex_Z, renderer);
-		imageToTexture("resources/letters/0.png", tex_0, renderer);
-		imageToTexture("resources/letters/1.png", tex_1, renderer);
-		imageToTexture("resources/letters/2.png", tex_2, renderer);
-		imageToTexture("resources/letters/3.png", tex_3, renderer);
-		imageToTexture("resources/letters/4.png", tex_4, renderer);
-		imageToTexture("resources/letters/5.png", tex_5, renderer);
-		imageToTexture("resources/letters/6.png", tex_6, renderer);
-		imageToTexture("resources/letters/7.png", tex_7, renderer);
-		imageToTexture("resources/letters/8.png", tex_8, renderer);
-		imageToTexture("resources/letters/9.png", tex_9, renderer);
-		imageToTexture("resources/letters/APOSTROPHE.png", tex_APOSTROPHE, renderer);
-		imageToTexture("resources/letters/BACKSLASH.png", tex_BACKSLASH, renderer);
-		imageToTexture("resources/letters/BACKSPACE.png", tex_BACKSPACE, renderer);
-		imageToTexture("resources/letters/COMMA.png", tex_COMMA, renderer);
-		imageToTexture("resources/letters/DELETE.png", tex_DELETE, renderer);
-		imageToTexture("resources/letters/DOT.png", tex_DOT, renderer);
-		imageToTexture("resources/letters/ENTER.png", tex_ENTER, renderer);
-		imageToTexture("resources/letters/EQUAL.png", tex_EQUAL, renderer);
-		imageToTexture("resources/letters/ESC.png", tex_ESC, renderer);
-		imageToTexture("resources/letters/GRAVE.png", tex_GRAVE, renderer);
-		imageToTexture("resources/letters/LEFTBRACE.png", tex_LEFTBRACE, renderer);
-		imageToTexture("resources/letters/MINUS.png", tex_MINUS, renderer);
-		imageToTexture("resources/letters/RIGHTBRACE.png", tex_RIGHTBRACE, renderer);
-		imageToTexture("resources/letters/SEMICOLON.png", tex_SEMICOLON, renderer);
-		imageToTexture("resources/letters/SLASH.png", tex_SLASH, renderer);
-		imageToTexture("resources/letters/SPACE.png", tex_SPACE, renderer);
-		imageToTexture("resources/letters/TAB.png", tex_TAB, renderer);
+		wordToTexture("A", tex_A);
+		wordToTexture("B", tex_B);
+		wordToTexture("C", tex_C);
+		wordToTexture("D", tex_D);
+		wordToTexture("E", tex_E);
+		wordToTexture("F", tex_F);
+		wordToTexture("G", tex_G);
+		wordToTexture("H", tex_H);
+		wordToTexture("I", tex_I);
+		wordToTexture("J", tex_J);
+		wordToTexture("K", tex_K);
+		wordToTexture("L", tex_L);
+		wordToTexture("M", tex_M);
+		wordToTexture("N", tex_N);
+		wordToTexture("O", tex_O);
+		wordToTexture("P", tex_P);
+		wordToTexture("Q", tex_Q);
+		wordToTexture("R", tex_R);
+		wordToTexture("S", tex_S);
+		wordToTexture("T", tex_T);
+		wordToTexture("U", tex_U);
+		wordToTexture("V", tex_V);
+		wordToTexture("W", tex_W);
+		wordToTexture("X", tex_X);
+		wordToTexture("Y", tex_Y);
+		wordToTexture("Z", tex_Z);
+		wordToTexture("0", tex_0);
+		wordToTexture("1", tex_1);
+		wordToTexture("2", tex_2);
+		wordToTexture("3", tex_3);
+		wordToTexture("4", tex_4);
+		wordToTexture("5", tex_5);
+		wordToTexture("6", tex_6);
+		wordToTexture("7", tex_7);
+		wordToTexture("8", tex_8);
+		wordToTexture("9", tex_9);
+		wordToTexture("'", tex_APOSTROPHE);
+		wordToTexture("\\", tex_BACKSLASH);
+		wordToTexture("backspace", tex_BACKSPACE);
+		wordToTexture(",", tex_COMMA);
+		wordToTexture("delete", tex_DELETE);
+		wordToTexture(".", tex_DOT);
+		wordToTexture("enter", tex_ENTER);
+		wordToTexture("=", tex_EQUAL);
+		wordToTexture("esc", tex_ESC);
+		wordToTexture("`", tex_GRAVE);
+		wordToTexture("[", tex_LEFTBRACE);
+		wordToTexture("-", tex_MINUS);
+		wordToTexture("]", tex_RIGHTBRACE);
+		wordToTexture(";", tex_SEMICOLON);
+		wordToTexture("/", tex_SLASH);
+		wordToTexture("space", tex_SPACE);
+		wordToTexture("tab", tex_TAB);
 	}
 
 	if (keyboard_input == -1) {

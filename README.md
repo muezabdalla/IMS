@@ -30,19 +30,20 @@ then run it:
 
 - SDL2-devel
 - SDL2_image-devel
+- SDL2_ttf-devel
 - gcc (only for compilation)
 - make (only for compilation)
 
 installing dependancies on void linux:
 
 ```
-sudo xbps-install SDL2-devel SDL2_image-devel make gcc
+sudo xbps-install SDL2-devel SDL2_image-devel SDL2_ttf-devel make gcc
 ```
 
 installing dependancies on debian-based linux:
 
 ```
-sudo apt install libsdl2-dev libsdl2-image-dev make gcc
+sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev make gcc
 ```
 
 after installing the dependancies, download the repository and `cd` into it and run this command to build from source:
@@ -62,6 +63,13 @@ to run it:
 ```
 ./IMS
 ```
+
+## common issues:
+
+you can change the images of the buttons if you put an them in `~/.config/IMS/` and you should name them as fellow:
+- button.png (the image of the button unpressed)
+- buttonP.png (the image of the button pressed)
+- Meta.png (the logo of the meta button)
 
 ## common issues:
 

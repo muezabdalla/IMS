@@ -1,12 +1,8 @@
 
 SDL_DestroyTexture(tex_ctrl);
-SDL_DestroyTexture(tex_ctrlP);
 SDL_DestroyTexture(tex_shift);
-SDL_DestroyTexture(tex_shiftP);
 SDL_DestroyTexture(tex_super);
-SDL_DestroyTexture(tex_superP);
 SDL_DestroyTexture(tex_alt);
-SDL_DestroyTexture(tex_altP);
 SDL_DestroyTexture(tex_general);
 SDL_DestroyTexture(tex_mouse);
 SDL_DestroyTexture(tex_mouse_rightP);
