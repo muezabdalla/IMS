@@ -667,6 +667,7 @@ void mouse_loop()
 
 int main(int argc, char* argv[]) {
 
+	SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
 	if ( SDL_Init( SDL_INIT_EVENTS ) < 0 ) {
 		cout << "Error initializing SDL: " << SDL_GetError() << endl;
 		return 1;
