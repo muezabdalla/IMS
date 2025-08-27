@@ -1,4 +1,4 @@
-// g++ key-sun.cpp -o key-sun.cpp.o -lSDL2 -lSDL2_image && ./key-sun.cpp.o
+// g++ key-sun.cpp -o key-sun.cpp.o -lSDL2 -lSDL2_image -lSDL2_ttf && ./key-sun.cpp.o
 #include <linux/input.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -13,8 +13,8 @@
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 
-char KEYBOARD_FILE[22] =	"/dev/input/event";
-char MOUSE_FILE[22] =		"/dev/input/event";
+char KEYBOARD_FILE[2][22] =	{"/dev/input/event","/dev/input/event"};
+char MOUSE_FILE[2][22] =		{"/dev/input/event","/dev/input/event"};
 
 int BUTTON_WIDTH =	100;
 int BUTTON_HIEGHT =	90;
@@ -313,30 +313,30 @@ void print_help()
 }
 
 SDL_Event sdl_input; // the input from SDL2 (the input when the application is in focus)
-struct input_event global_keyboard; // the global input from the keyboard input file
-struct input_event global_mouse; // the global input from the mouse input file
+struct input_event global_keyboard[2]; // the global input from the keyboard input file
+struct input_event global_mouse[2]; // the global input from the mouse input file
 bool close_program = false; // if set to true the loop exit (to close the app)
 
-int keyboard_input;
-int mouse_input;
+int keyboard_input[2];
+int mouse_input[2];
 
-void keyboard_loop()
+void keyboard_loop(const int fn)
 {
 	while (!close_program)
 	{
-		ssize_t keyboard_bytesRead = read(keyboard_input, &global_keyboard, sizeof(global_keyboard));
+		ssize_t keyboard_bytesRead = read(keyboard_input[fn], &global_keyboard[fn], sizeof(global_keyboard[fn]));
 		if (keyboard_bytesRead == (ssize_t)-1) {
-			cout << "Failed to read from " << KEYBOARD_FILE << ". but it was opened successfuly" << endl;
+			cout << "Failed to read from " << KEYBOARD_FILE[fn] << ". but it was opened successfuly" << endl;
 			exit(1);
 		}
 
 		// checking if the type is pressed or released
-		if (global_keyboard.type == EV_KEY)
+		if (global_keyboard[fn].type == EV_KEY)
 		{
 
-			if (global_keyboard.value == 0)
+			if (global_keyboard[fn].value == 0)
 			{
-				switch (global_keyboard.code)
+				switch (global_keyboard[fn].code)
 				{
 					case KEY_RIGHTCTRL:
 					case KEY_LEFTCTRL:
@@ -400,17 +400,17 @@ void keyboard_loop()
 							}
 							else RenderCustom(tex_general, &rect_letters);
 							// returning the size of the window for the large keys
-							if (global_keyboard.code == KEY_BACKSPACE || 
-								global_keyboard.code == KEY_ENTER || 
-								global_keyboard.code == KEY_SPACE || 
-								global_keyboard.code == KEY_TAB)
+							if (global_keyboard[fn].code == KEY_BACKSPACE || 
+								global_keyboard[fn].code == KEY_ENTER || 
+								global_keyboard[fn].code == KEY_SPACE || 
+								global_keyboard[fn].code == KEY_TAB)
 								update_window_width(1);
 						}
-				} // switch (global_keyboard.code)
-			} // if (global_keyboard.value == 0)
-			if (global_keyboard.value == 1)
+				} // switch (global_keyboard[fn].code)
+			} // if (global_keyboard[fn].value == 0)
+			if (global_keyboard[fn].value == 1)
 			{
-				switch (global_keyboard.code)
+				switch (global_keyboard[fn].code)
 				{
 					case KEY_RIGHTCTRL:
 					case KEY_LEFTCTRL:
@@ -483,7 +483,7 @@ void keyboard_loop()
 								SDL_SetWindowSize(window, window_width, window_hieght);
 							}
 							RenderCustom(tex_generalP, &rect_letters);
-							switch (global_keyboard.code)
+							switch (global_keyboard[fn].code)
 							{
 								case KEY_A:				RenderCustom(tex_A,			&rect_offset_letters); break;
 								case KEY_B:				RenderCustom(tex_B,			&rect_offset_letters); break;
@@ -552,37 +552,37 @@ void keyboard_loop()
 														RenderCustom(tex_blank, &rect_blank);
 														RenderLetters(tex_generalP,	&rect_tab, tex_TAB,	&rect_offset_tab); break;
 			
-								default: cout << "code:" << global_keyboard.code << endl;
-							} // switch (global_keyboard.code)
+								default: cout << "code:" << global_keyboard[fn].code << endl;
+							} // switch (global_keyboard[fn].code)
 						} // default: if (SHOW_LETTERS)
-				} // switch (global_keyboard.code)
+				} // switch (global_keyboard[fn].code)
 			}
 		}
 		check_show_window();
 	}
 }
 
-void mouse_loop()
+void mouse_loop(const int fn)
 {
 	while (!close_program)
 	{
-		ssize_t mouse_bytesRead = read(mouse_input, &global_mouse, sizeof(global_mouse));
+		ssize_t mouse_bytesRead = read(mouse_input[fn], &global_mouse[fn], sizeof(global_mouse[fn]));
 		if (mouse_bytesRead == (ssize_t)-1) {
-			cout << "Failed to read from " << MOUSE_FILE << ". but it was opened successfuly" << endl;
+			cout << "Failed to read from " << MOUSE_FILE[fn] << ". but it was opened successfuly" << endl;
 			exit(1);
 		}
 
 		// checkin if the type is pressed or released
-		if (global_mouse.type == EV_KEY)
+		if (global_mouse[fn].type == EV_KEY)
 		{
 			//checking if any of the three buttons release(right,left,wheel)
-			if (global_mouse.value == 0 && global_mouse.code > 271 && global_mouse.code < 275)
+			if (global_mouse[fn].value == 0 && global_mouse[fn].code > 271 && global_mouse[fn].code < 275)
 			{
 				if (TRANSPARENT_MODE)
 				{
-					if (global_mouse.code == 272) PRESSED_MOUSE[0] = false;
-					if (global_mouse.code == 273) PRESSED_MOUSE[1] = false;
-					if (global_mouse.code == 274) PRESSED_MOUSE[2] = false;
+					if (global_mouse[fn].code == 272) PRESSED_MOUSE[0] = false;
+					if (global_mouse[fn].code == 273) PRESSED_MOUSE[1] = false;
+					if (global_mouse[fn].code == 274) PRESSED_MOUSE[2] = false;
 
 					window_width = ntrues_keyboard() * BUTTON_WIDTH + check_mouse_clicked() * MOUSE_WIDTH;
 					update_window_hieght();
@@ -590,9 +590,9 @@ void mouse_loop()
 				}
 				if (check_mouse_clicked() == 0) RenderCustom(tex_mouse, &rect_mouse);
 			}
-			if (global_mouse.value == 1)
+			if (global_mouse[fn].value == 1)
 			{
-				switch (global_mouse.code)
+				switch (global_mouse[fn].code)
 				{
 					case 272: // left click
 						if (TRANSPARENT_MODE)
@@ -634,7 +634,7 @@ void mouse_loop()
 			}
 		}
 		// checking if the type is = 2 (relative)
-		if (global_mouse.type == EV_REL && global_mouse.code == 11)
+		if (global_mouse[fn].type == EV_REL && global_mouse[fn].code == 11)
 		{
 			if (TRANSPARENT_MODE)
 			{
@@ -645,7 +645,7 @@ void mouse_loop()
 				SDL_ShowWindow(window);
 			}
 			// checking if scrolled up
-			if (global_mouse.value == 120)
+			if (global_mouse[fn].value == 120)
 				RenderCustom(tex_mouse_wheelup, &rect_mouse);
 			else // scrolled down
 				RenderCustom(tex_mouse_wheeldown, &rect_mouse);
@@ -675,9 +675,19 @@ int main(int argc, char* argv[]) {
 
 	// detecting the event files for keyboard and mouse
 	char keyboard_number =	get_command_output("ls /dev/input/by-path/ -la | grep -o \"event-kbd -> ../event[0-9]*\" | grep -o \"[0-9]*\" | head -1");
+	KEYBOARD_FILE[0][16] =		keyboard_number;
+	char keyboard_number2 =	get_command_output("ls /dev/input/by-path/ -la | grep -o \"event-kbd -> ../event[0-9]*\" | grep -o \"[0-9]*\" | tail -1");
+	KEYBOARD_FILE[1][16] =		keyboard_number2;
 	char mouse_number =		get_command_output("ls /dev/input/by-path/ -la | grep -o \"event-mouse -> ../event[0-9]*\" | grep -o \"[0-9]*\" | head -1");
-	KEYBOARD_FILE[16] =		keyboard_number;
-	MOUSE_FILE[16] =		mouse_number;
+	MOUSE_FILE[0][16] =		mouse_number;
+	char mouse_number2 =		get_command_output("ls /dev/input/by-path/ -la | grep -o \"event-mouse -> ../event[0-9]*\" | grep -o \"[0-9]*\" | tail -1");
+	MOUSE_FILE[1][16] =		mouse_number2;
+
+	bool use_second_keyboard_file = false, use_second_mouse_file = false;
+	if ( keyboard_number != keyboard_number2 )
+		use_second_keyboard_file = true;
+	if ( mouse_number != mouse_number2 )
+		use_second_mouse_file = true;
 
 	current_path = argv[0];
 	// remove last seven chars(IMS) by subtracting totall length - 3
@@ -897,23 +907,49 @@ int main(int argc, char* argv[]) {
 		wordToTexture("tab", tex_TAB);
 	}
 
-	if (keyboard_input == -1) {
-		cout << "Cannot open " << KEYBOARD_FILE << endl;
+	if (keyboard_input[0] == -1) {
+		cout << "Cannot open " << KEYBOARD_FILE[0] << endl;
 		return 1;
 	}
-	if (mouse_input == -1) {
-		cout << "Cannot open " << MOUSE_FILE << endl;
+	if (use_second_keyboard_file)
+	{
+		if (keyboard_input[1] == -1) {
+			cout << "Cannot open " << KEYBOARD_FILE[1] << endl;
+			return 1;
+		}
+	}
+	if (mouse_input[0] == -1) {
+		cout << "Cannot open " << MOUSE_FILE[0] << endl;
 		return 1;
+	}
+	if (use_second_mouse_file)
+	{
+		if (mouse_input[1] == -1) {
+			cout << "Cannot open " << MOUSE_FILE[1] << endl;
+			return 1;
+		}
 	}
 
-	keyboard_input = open(KEYBOARD_FILE, O_RDONLY);
+	keyboard_input[0] = open(KEYBOARD_FILE[0], O_RDONLY);
+	if (use_second_keyboard_file)
+		keyboard_input[1] = open(KEYBOARD_FILE[1], O_RDONLY);
 	if (SHOW_MOUSE)
-		mouse_input = open(MOUSE_FILE, O_RDONLY);
+	{
+		mouse_input[0] = open(MOUSE_FILE[0], O_RDONLY);
+		if (use_second_mouse_file)
+			mouse_input[1] = open(MOUSE_FILE[1], O_RDONLY);
+	}
 
+	thread keyboard_thread2;
+	thread mouse_thread2;
 	if (SHOW_MOUSE && SHOW_KEYBOARD) // both keyboard and mouse
 	{
-		thread keyboard_thread(keyboard_loop);
-		thread mouse_thread(mouse_loop);
+		thread keyboard_thread(keyboard_loop,0);
+		if (use_second_keyboard_file)
+			keyboard_thread2 = thread(&keyboard_loop,1);
+		thread mouse_thread(mouse_loop,0);
+		if (use_second_mouse_file)
+			mouse_thread2 = thread(&mouse_loop,1);
 		while (!close_program)
 		{
 			SDL_Delay(REFRESH_TIME);
@@ -929,12 +965,18 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		#include "quit.h" // clear things and exit
+		if (use_second_mouse_file)
+			mouse_thread2.join();
 		mouse_thread.join();
+		if (use_second_keyboard_file)
+			keyboard_thread2.join();
 		keyboard_thread.join();
 	}
 	else if (!SHOW_MOUSE && SHOW_KEYBOARD) // keyboard only
 	{
-		thread keyboard_thread(keyboard_loop);
+		thread keyboard_thread(keyboard_loop,0);
+		if (use_second_keyboard_file)
+			keyboard_thread2 = thread(&keyboard_loop,1);
 		while (!close_program)
 		{
 			SDL_Delay(REFRESH_TIME);
@@ -949,12 +991,16 @@ int main(int argc, char* argv[]) {
 				if (sdl_input.type == SDL_QUIT) close_program =true;
 			}
 		}
+		if (use_second_keyboard_file)
+			keyboard_thread2.join();
 		keyboard_thread.join();
 		#include "quit.h" // clear things and exit
 	}
 	else // mouse only
 	{
-		thread mouse_thread(mouse_loop);
+		thread mouse_thread(mouse_loop,0);
+		if (use_second_mouse_file)
+			mouse_thread2 = thread(&mouse_loop,1);
 		while (!close_program)
 		{
 			SDL_Delay(REFRESH_TIME);
@@ -969,6 +1015,8 @@ int main(int argc, char* argv[]) {
 				if (sdl_input.type == SDL_QUIT) close_program =true;
 			}
 		}
+		if (use_second_mouse_file)
+			mouse_thread2.join();
 		mouse_thread.join();
 		#include "quit.h" // clear things and exit
 	}

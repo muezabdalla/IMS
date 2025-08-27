@@ -98,11 +98,11 @@ while (i < argc)
 			return 1;
 		}
 
-		strcpy(KEYBOARD_FILE, arg_next.c_str());
+		strcpy(KEYBOARD_FILE[0], arg_next.c_str());
 
-		if (!std::filesystem::exists(KEYBOARD_FILE))
+		if (!std::filesystem::exists(KEYBOARD_FILE[0]))
 		{
-			cout << "file " << KEYBOARD_FILE << " does not exist" << endl;
+			cout << "file " << KEYBOARD_FILE[0] << " does not exist" << endl;
 			return 1;
 		}
 		i+=2;
@@ -121,11 +121,11 @@ while (i < argc)
 			return 1;
 		}
 
-		strcpy(MOUSE_FILE, arg_next.c_str());
+		strcpy(MOUSE_FILE[0], arg_next.c_str());
 
-		if (!std::filesystem::exists(MOUSE_FILE))
+		if (!std::filesystem::exists(MOUSE_FILE[0]))
 		{
-			cout << "file " << MOUSE_FILE << " does not exist" << endl;
+			cout << "file " << MOUSE_FILE[0] << " does not exist" << endl;
 			return 1;
 		}
 		i+=2;
