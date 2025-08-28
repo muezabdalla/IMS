@@ -1,4 +1,4 @@
-// g++ key-sun.cpp -o key-sun.cpp.o -lSDL2 -lSDL2_image -lSDL2_ttf && ./key-sun.cpp.o
+// g++ IMS.cpp -o IMS.cpp.o -lSDL2 -lSDL2_image -lSDL2_ttf && ./IMS.cpp.o
 #include <linux/input.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -62,10 +62,8 @@ short int nButtons = 0; // this shows the number of buttons including the genera
 
 using namespace std;
 
+string home_dir = getenv("HOME"); // get the home directory in linux
 string current_path;
-string image_absolute_path;
-string font_path;
-string font_absolute_path;
 TTF_Font* font;
 SDL_Color font_color;
 // the offsets for the characters inside the buttons
@@ -278,15 +276,15 @@ void update_window_width(float factor)
 	rect_blank = {rect_letters.x, 0, int(BUTTON_WIDTH*factor), window_hieght};
 }
 
-void imageToTexture(string image_path, SDL_Texture* &tex_temp)
+void imageToTexture(string image_path_temp, SDL_Texture* &tex_temp)
 {
-	if (!filesystem::is_regular_file(image_path))
+	if (!filesystem::is_regular_file(image_path_temp))
 	{
-		cout << "file\"" << image_absolute_path << "\" does not exist" << endl;
+		cout << "file\"" << image_path_temp << "\" does not exist" << endl;
 		exit(0);
 	}
 	// making the surfaces from the images
-	SDL_Surface* sur_temp =	IMG_Load(image_path.c_str());
+	SDL_Surface* sur_temp =	IMG_Load(image_path_temp.c_str());
 	// making the texture from the surfaces
 	tex_temp = SDL_CreateTextureFromSurface(renderer, sur_temp);
 	// we do not need the surfaces from now so we freed them
@@ -308,8 +306,30 @@ void wordToTexture(const char* word, SDL_Texture* &tex_temp)
 void print_help() 
 {
 	// use the current_path to make run even from a differant directory
-	system(("man -c "+current_path+"IMS-sun.1").c_str());
+	if (filesystem::is_regular_file(current_path+"IMS.1"))
+		system(("man -c "+current_path+"IMS.1").c_str());
+	else
+		system("man IMS");
 	exit(0);
+}
+// to find if a file (image or font) is in ~/config/IMS/ or /usr/shar/IMS/ or ./resources/
+string find_file(string file_name)
+{
+	if (filesystem::is_regular_file(home_dir+"/.config/IMS/"+file_name))
+	{
+		cout << "found ~/config/IMS/" << file_name << endl;
+		return home_dir+"/.config/IMS/"+file_name;
+	}
+	else if (filesystem::is_regular_file(current_path+"resources/"+file_name))
+	{
+		cout << "found2 ~/config/IMS/" << file_name << endl;
+		return current_path+"resources/"+file_name;
+	}
+	else 
+	{
+		cout << "found3 ~/config/IMS/" << file_name << endl;
+		return "/usr/share/IMS/"+file_name;
+	}
 }
 
 SDL_Event sdl_input; // the input from SDL2 (the input when the application is in focus)
@@ -691,16 +711,13 @@ int main(int argc, char* argv[]) {
 
 	current_path = argv[0];
 	// remove last seven chars(IMS) by subtracting totall length - 3
-	current_path.erase(current_path.length() - 3);
+	while (current_path.back != '/')
+		current_path.pop_back();
+	//current_path.erase(current_path.length() - 3);
 
 	TTF_Init();
 
-	if (filesystem::is_regular_file("~/.config/IMS/font.ttf"))
-		font_path = "~/.config/IMS/font.ttf";
-	else
-		font_path = current_path+"resources/font.ttf";
-
-	font = TTF_OpenFont(font_path.c_str(), 52);
+	font = TTF_OpenFont(find_file("font.ttf").c_str(), 52);
 	font_color = {255, 255, 255};
 
 	// variables for handing arguments
@@ -788,15 +805,8 @@ int main(int argc, char* argv[]) {
 
 	if (SHOW_KEYBOARD)
 	{
-		if (filesystem::is_regular_file("~/.config/IMS/button.png"))
-			imageToTexture("~/.config/IMS/button.png", tex_general);
-		else
-			imageToTexture(current_path+"resources/button.png", tex_general);
-
-		if (filesystem::is_regular_file("~/.config/IMS/buttonP.png"))
-			imageToTexture("~/.config/IMS/buttonP.png", tex_generalP);
-		else
-			imageToTexture(current_path+"resources/buttonP.png", tex_generalP);
+		imageToTexture(find_file("button.png"), tex_general);
+		imageToTexture(find_file("buttonP.png"), tex_generalP);
 	}
 	if (SHOW_CTRL) 
 	{
@@ -815,10 +825,7 @@ int main(int argc, char* argv[]) {
 	if (SHOW_SUPER) 
 	{
 		// making the surfaces from the images
-		if (filesystem::is_regular_file("~/.config/IMS/Meta.png"))
-			imageToTexture("~/.config/IMS/Meta.png", tex_super);
-		else
-			imageToTexture(current_path+"resources/Meta.png", tex_super);
+		imageToTexture(find_file("Meta.png"), tex_super);
 		// render the normal button at the beginning
 		RenderLetters(tex_general,  &rect_super, tex_super,  &rect_offset_super);
 	}
@@ -837,12 +844,12 @@ int main(int argc, char* argv[]) {
 	if (SHOW_MOUSE)
 	{
 		// making the surfaces from the images
-		imageToTexture(current_path+"resources/mouse.png", tex_mouse);
-		imageToTexture(current_path+"resources/mouse_rightP.png", tex_mouse_rightP);
-		imageToTexture(current_path+"resources/mouse_leftP.png", tex_mouse_leftP);
-		imageToTexture(current_path+"resources/mouse_wheelP.png", tex_mouse_wheelP);
-		imageToTexture(current_path+"resources/mouse_wheelup.png", tex_mouse_wheelup);
-		imageToTexture(current_path+"resources/mouse_wheeldown.png", tex_mouse_wheeldown);
+		imageToTexture(find_file("mouse.png"), tex_mouse);
+		imageToTexture(find_file("mouse_rightP.png"), tex_mouse_rightP);
+		imageToTexture(find_file("mouse_leftP.png"), tex_mouse_leftP);
+		imageToTexture(find_file("mouse_wheelP.png"), tex_mouse_wheelP);
+		imageToTexture(find_file("mouse_wheelup.png"), tex_mouse_wheelup);
+		imageToTexture(find_file("mouse_wheeldown.png"), tex_mouse_wheeldown);
 		// render the normal button at the beginning
 		SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
 	}
