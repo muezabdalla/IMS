@@ -316,20 +316,11 @@ void print_help()
 string find_file(string file_name)
 {
 	if (filesystem::is_regular_file(home_dir+"/.config/IMS/"+file_name))
-	{
-		cout << "found ~/config/IMS/" << file_name << endl;
 		return home_dir+"/.config/IMS/"+file_name;
-	}
 	else if (filesystem::is_regular_file(current_path+"resources/"+file_name))
-	{
-		cout << "found2 ~/config/IMS/" << file_name << endl;
 		return current_path+"resources/"+file_name;
-	}
 	else 
-	{
-		cout << "found3 ~/config/IMS/" << file_name << endl;
 		return "/usr/share/IMS/"+file_name;
-	}
 }
 
 SDL_Event sdl_input; // the input from SDL2 (the input when the application is in focus)
