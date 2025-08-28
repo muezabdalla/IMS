@@ -702,7 +702,7 @@ int main(int argc, char* argv[]) {
 
 	current_path = argv[0];
 	// remove last seven chars(IMS) by subtracting totall length - 3
-	while (current_path.back != '/')
+	while (current_path.back() != '/')
 		current_path.pop_back();
 	//current_path.erase(current_path.length() - 3);
 
