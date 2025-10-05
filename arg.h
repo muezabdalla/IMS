@@ -163,6 +163,10 @@ while (i < argc)
 		TRANSPARENT_MODE = true;
 		i++;
 
+	} else if (arg_current == "-n") {
+		CONFIG_GUI = false;
+		i++;
+
 	} else if (arg_current == "-r") {
 		REFRESH_TIME = atoi(argv[i+1]);
 		if (REFRESH_TIME <= 0)

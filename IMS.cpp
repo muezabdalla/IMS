@@ -31,6 +31,7 @@ bool SHOW_BORDERS = 	true;
 bool SHOW_KEYBOARD =	true;
 bool SHOW_MOUSE =		true;
 bool TRANSPARENT_MODE =	false;
+bool CONFIG_GUI =		true;
 bool POS_RIGHT =		false; // when used the "-p right <something>"
 bool POS_BUTTOM =		false; // when used the "-p <something> buttom"
 bool NEED_REFRESH =		false; // to know if a refresh is needed
@@ -107,6 +108,11 @@ SDL_Rect rect_offset_enter;
 SDL_Rect rect_offset_space;
 SDL_Rect rect_offset_tab;
 
+SDL_Texture * tex_checked = NULL;
+SDL_Texture * tex_notchecked = NULL;
+SDL_Texture * tex_btn_normal = NULL;
+SDL_Texture * tex_btn_hoover = NULL;
+SDL_Texture * tex_btn_holded = NULL;
 // initializing outside the if statments to be able to use them
 SDL_Texture* tex_ctrl =		NULL;
 SDL_Texture* tex_shift =	NULL;
@@ -183,13 +189,13 @@ char get_command_output(const char * command)
 	fpipe = popen(command, "r");
 	if (fpipe == NULL)
 	{
-		cout << "error running the command:" << command << endl;
+		cerr << "error running the command:" << command << endl;
 		return -1;
 	}
 	fread(&output, sizeof output, 1, fpipe);
 	if (fread == NULL)
 	{
-		cout << "error storing the output of the command:" << command << endl;
+		cerr << "error storing the output of the command:" << command << endl;
 		return -1;
 	}
 	pclose(fpipe);
@@ -280,8 +286,8 @@ void imageToTexture(string image_path_temp, SDL_Texture* &tex_temp)
 {
 	if (!filesystem::is_regular_file(image_path_temp))
 	{
-		cout << "file\"" << image_path_temp << "\" does not exist" << endl;
-		exit(0);
+		cerr << "file\"" << image_path_temp << "\" does not exist" << endl;
+		exit(1);
 	}
 	// making the surfaces from the images
 	SDL_Surface* sur_temp =	IMG_Load(image_path_temp.c_str());
@@ -337,7 +343,7 @@ void keyboard_loop(const int fn)
 	{
 		ssize_t keyboard_bytesRead = read(keyboard_input[fn], &global_keyboard[fn], sizeof(global_keyboard[fn]));
 		if (keyboard_bytesRead == (ssize_t)-1) {
-			cout << "Failed to read from " << KEYBOARD_FILE[fn] << ". but it was opened successfuly" << endl;
+			cerr << "Failed to read from " << KEYBOARD_FILE[fn] << ". but it was opened successfuly" << endl;
 			exit(1);
 		}
 
@@ -579,7 +585,7 @@ void mouse_loop(const int fn)
 	{
 		ssize_t mouse_bytesRead = read(mouse_input[fn], &global_mouse[fn], sizeof(global_mouse[fn]));
 		if (mouse_bytesRead == (ssize_t)-1) {
-			cout << "Failed to read from " << MOUSE_FILE[fn] << ". but it was opened successfuly" << endl;
+			cerr << "Failed to read from " << MOUSE_FILE[fn] << ". but it was opened successfuly" << endl;
 			exit(1);
 		}
 
@@ -678,9 +684,9 @@ void mouse_loop(const int fn)
 
 int main(int argc, char* argv[]) {
 
-	SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
+	SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland");
 	if ( SDL_Init( SDL_INIT_EVENTS ) < 0 ) {
-		cout << "Error initializing SDL: " << SDL_GetError() << endl;
+		cerr << "Error initializing SDL: " << SDL_GetError() << endl;
 		return 1;
 	} 
 
@@ -718,6 +724,16 @@ int main(int argc, char* argv[]) {
 
 	int X=0,Y=0; // position variables
 	#include "arg.h"
+
+	if (CONFIG_GUI)
+	{
+		#include "config_gui.h"
+	}
+	if (close_program)
+	{
+		#include "quit.h" // clear things and exit
+	}
+
 	if (SHOW_CTRL) 
 	{
 		rect_ctrl =		{nButtons*BUTTON_WIDTH, 0, BUTTON_WIDTH, BUTTON_HIEGHT}; 
@@ -786,6 +802,7 @@ int main(int argc, char* argv[]) {
 		update_window_hieght();
 		window = SDL_CreateWindow("IMS", X, Y, window_width, window_hieght, SDL_WINDOW_TOOLTIP | SDL_WINDOW_ALWAYS_ON_TOP);
 	}
+
 	renderer = SDL_CreateRenderer(window, 3, 0);
 	// initializing the blank texture
 	sur_blank = SDL_GetWindowSurface(window);
@@ -793,6 +810,7 @@ int main(int argc, char* argv[]) {
 	tex_blank = SDL_CreateTextureFromSurface(renderer, sur_blank);
 	// display the background color
 	SDL_SetRenderDrawColor(renderer, BG_COLOR_R, BG_COLOR_G, BG_COLOR_B, BG_COLOR_A);
+	SDL_RenderClear(renderer);
 
 	if (SHOW_KEYBOARD)
 	{
@@ -906,24 +924,24 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (keyboard_input[0] == -1) {
-		cout << "Cannot open " << KEYBOARD_FILE[0] << endl;
+		cerr << "Cannot open " << KEYBOARD_FILE[0] << endl;
 		return 1;
 	}
 	if (use_second_keyboard_file)
 	{
 		if (keyboard_input[1] == -1) {
-			cout << "Cannot open " << KEYBOARD_FILE[1] << endl;
+			cerr << "Cannot open " << KEYBOARD_FILE[1] << endl;
 			return 1;
 		}
 	}
 	if (mouse_input[0] == -1) {
-		cout << "Cannot open " << MOUSE_FILE[0] << endl;
+		cerr << "Cannot open " << MOUSE_FILE[0] << endl;
 		return 1;
 	}
 	if (use_second_mouse_file)
 	{
 		if (mouse_input[1] == -1) {
-			cout << "Cannot open " << MOUSE_FILE[1] << endl;
+			cerr << "Cannot open " << MOUSE_FILE[1] << endl;
 			return 1;
 		}
 	}
@@ -938,84 +956,86 @@ int main(int argc, char* argv[]) {
 			mouse_input[1] = open(MOUSE_FILE[1], O_RDONLY);
 	}
 
+	thread keyboard_thread;
 	thread keyboard_thread2;
+	thread mouse_thread;
 	thread mouse_thread2;
-	if (SHOW_MOUSE && SHOW_KEYBOARD) // both keyboard and mouse
+	if (SHOW_KEYBOARD)
 	{
-		thread keyboard_thread(keyboard_loop,0);
+		keyboard_thread = thread(&keyboard_loop,0);
 		if (use_second_keyboard_file)
 			keyboard_thread2 = thread(&keyboard_loop,1);
-		thread mouse_thread(mouse_loop,0);
+	}
+	if (SHOW_MOUSE)
+	{
+		mouse_thread = thread(&mouse_loop,0);
 		if (use_second_mouse_file)
 			mouse_thread2 = thread(&mouse_loop,1);
-		while (!close_program)
-		{
-			SDL_Delay(REFRESH_TIME);
-			if (NEED_REFRESH)
-			{
-				SDL_RenderPresent(renderer);
-				NEED_REFRESH = false;
-			}
-			while ( SDL_PollEvent( &sdl_input ) != 0 ) 
-			{
-				// checking if you want to close the app
-				if (sdl_input.type == SDL_QUIT) close_program =true;
-			}
-		}
-		#include "quit.h" // clear things and exit
-		if (use_second_mouse_file)
-			mouse_thread2.join();
-		mouse_thread.join();
-		if (use_second_keyboard_file)
-			keyboard_thread2.join();
-		keyboard_thread.join();
 	}
-	else if (!SHOW_MOUSE && SHOW_KEYBOARD) // keyboard only
+	while (!close_program)
 	{
-		thread keyboard_thread(keyboard_loop,0);
-		if (use_second_keyboard_file)
-			keyboard_thread2 = thread(&keyboard_loop,1);
-		while (!close_program)
+		SDL_Delay(REFRESH_TIME);
+		if (NEED_REFRESH)
 		{
-			SDL_Delay(REFRESH_TIME);
-			if (NEED_REFRESH)
+			SDL_RenderPresent(renderer);
+			NEED_REFRESH = false;
+		}
+		while ( SDL_PollEvent( &sdl_input ) != 0 ) 
+		{
+			// checking if you want to close the app
+			if (sdl_input.type == SDL_QUIT) close_program =true;
+			if (sdl_input.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
 			{
-				SDL_RenderPresent(renderer);
-				NEED_REFRESH = false;
-			}
-			while ( SDL_PollEvent( &sdl_input ) != 0 ) 
-			{
-				// checking if you want to close the app
-				if (sdl_input.type == SDL_QUIT) close_program =true;
+				SDL_SetRenderDrawColor(renderer, BG_COLOR_R, BG_COLOR_G, BG_COLOR_B, BG_COLOR_A);
+				SDL_RenderClear(renderer);
+				if (SHOW_CTRL)
+				{
+					if (PRESSED_BUTTONS[0])
+						RenderLetters(tex_generalP,  &rect_ctrl, tex_ctrl, &rect_offset_ctrl);
+					else
+						RenderLetters(tex_general,  &rect_ctrl, tex_ctrl, &rect_offset_ctrl);
+				}
+				if (SHOW_SHIFT)
+				{
+					if (PRESSED_BUTTONS[1])
+						RenderLetters(tex_generalP,  &rect_shift, tex_shift, &rect_offset_shift);
+					else
+						RenderLetters(tex_general,  &rect_shift, tex_shift, &rect_offset_shift);
+				}
+				if (SHOW_SUPER)
+				{
+					if (PRESSED_BUTTONS[2])
+						RenderLetters(tex_generalP,  &rect_super, tex_super, &rect_offset_super);
+					else
+						RenderLetters(tex_general,  &rect_super, tex_super, &rect_offset_super);
+				}
+				if (SHOW_ALT)
+				{
+					if (PRESSED_BUTTONS[3])
+						RenderLetters(tex_generalP,  &rect_alt, tex_alt, &rect_offset_alt);
+					else
+						RenderLetters(tex_general,  &rect_alt, tex_alt, &rect_offset_alt);
+				}
+				if (SHOW_LETTERS)
+				{
+					if (PRESSED_BUTTONS[3])
+						SDL_RenderCopy(renderer, tex_generalP,  NULL, &rect_letters);
+					else
+						SDL_RenderCopy(renderer, tex_general,  NULL, &rect_letters);
+				}
+				if (SHOW_MOUSE)
+				{
+						SDL_RenderCopy(renderer, tex_mouse,  NULL, &rect_mouse);
+						if (PRESSED_MOUSE[0])
+							RenderCustom(tex_mouse_leftP, &rect_mouse);
+						if (PRESSED_MOUSE[1])
+							RenderCustom(tex_mouse_rightP, &rect_mouse);
+						if (PRESSED_MOUSE[2])
+							RenderCustom(tex_mouse_wheelP, &rect_mouse);
+				}
+
 			}
 		}
-		if (use_second_keyboard_file)
-			keyboard_thread2.join();
-		keyboard_thread.join();
-		#include "quit.h" // clear things and exit
 	}
-	else // mouse only
-	{
-		thread mouse_thread(mouse_loop,0);
-		if (use_second_mouse_file)
-			mouse_thread2 = thread(&mouse_loop,1);
-		while (!close_program)
-		{
-			SDL_Delay(REFRESH_TIME);
-			if (NEED_REFRESH)
-			{
-				SDL_RenderPresent(renderer);
-				NEED_REFRESH = false;
-			}
-			while ( SDL_PollEvent( &sdl_input ) != 0 ) 
-			{
-				// checking if you want to close the app
-				if (sdl_input.type == SDL_QUIT) close_program =true;
-			}
-		}
-		if (use_second_mouse_file)
-			mouse_thread2.join();
-		mouse_thread.join();
-		#include "quit.h" // clear things and exit
-	}
+	#include "quit.h" // clear things and exit
 }
