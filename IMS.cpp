@@ -363,7 +363,7 @@ bool close_program = false; // if set to true the loop exit (to close the app)
 
 int main(int argc, char* argv[]) {
 
-	SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland");
+	SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
 	if ( SDL_Init( SDL_INIT_EVENTS ) < 0 ) {
 		cerr << "Error initializing SDL: " << SDL_GetError() << endl;
 		return 1;

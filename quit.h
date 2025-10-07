@@ -12,6 +12,7 @@ SDL_DestroyTexture(tex_mouse_leftP);
 SDL_DestroyTexture(tex_mouse_wheelP);
 SDL_DestroyTexture(tex_mouse_wheelup);
 SDL_DestroyTexture(tex_mouse_wheeldown);
+SDL_DestroyTexture(tex_current_letter);
 
 tex_blank = NULL;
 tex_ctrl = NULL;
@@ -26,6 +27,7 @@ tex_mouse_leftP = NULL;
 tex_mouse_wheelP = NULL;
 tex_mouse_wheelup = NULL;
 tex_mouse_wheeldown = NULL;
+tex_current_letter = NULL;
 
 SDL_DestroyTexture(tex_A);
 SDL_DestroyTexture(tex_B);
