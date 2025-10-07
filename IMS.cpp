@@ -11,6 +11,10 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
+#define WARN_COL "\e[0;33m" // warning color
+#define ERR_COL "\e[0;31m" // error color
+#define NOR_COL "\e[0m" // normal color
+
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 
@@ -208,26 +212,6 @@ void RenderLetters(SDL_Texture * textureT, SDL_Rect * dstRectT, SDL_Texture * te
 	NEED_REFRESH = true;
 }
 
-char get_command_output(const char * command)
-{
-	char output;
-	FILE *fpipe;
-	fpipe = popen(command, "r");
-	if (fpipe == NULL)
-	{
-		cerr << "error running the command:" << command << endl;
-		return -1;
-	}
-	fread(&output, sizeof output, 1, fpipe);
-	if (fread == NULL)
-	{
-		cerr << "error storing the output of the command:" << command << endl;
-		return -1;
-	}
-	pclose(fpipe);
-	return output;
-}
-
 int ntrues_keyboard()
 {
 	int count = 0;
@@ -305,7 +289,7 @@ void imageToTexture(string image_path_temp, SDL_Texture* &tex_temp)
 {
 	if (!filesystem::is_regular_file(image_path_temp))
 	{
-		cerr << "file\"" << image_path_temp << "\" does not exist" << endl;
+		cerr <<ERR_COL "file\"" << image_path_temp << "\" does not exist" NOR_COL<< endl;
 		exit(1);
 	}
 	// making the surfaces from the images
@@ -365,7 +349,7 @@ int main(int argc, char* argv[]) {
 
 	SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
 	if ( SDL_Init( SDL_INIT_EVENTS ) < 0 ) {
-		cerr << "Error initializing SDL: " << SDL_GetError() << endl;
+		cerr <<ERR_COL "Error initializing SDL: " << SDL_GetError() << NOR_COL<< endl;
 		return 1;
 	} 
 
@@ -616,7 +600,6 @@ int main(int argc, char* argv[]) {
         libinput_dispatch(linput); // has to be called after poll()
 
         while((levent = libinput_get_event(linput))) {
-			//cout << "event happened" << endl;
             ltype = libinput_event_get_type(levent);
             if(ltype == LIBINPUT_EVENT_KEYBOARD_KEY) {
                 kbevent = libinput_event_get_keyboard_event(levent);
@@ -915,7 +898,6 @@ int main(int argc, char* argv[]) {
 			{
                 pevent = libinput_event_get_pointer_event(levent);
 				scroll_value = libinput_event_pointer_get_scroll_value(pevent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
-                //cout << "scrolled " << scroll_value << endl;
 				if (TRANSPARENT_MODE)
 				{
 					PRESSED_MOUSE[3] = true;

@@ -11,7 +11,7 @@ while (i < argc)
 		// checking if the arguments after -p are less than required
 		if (argc-i-1 < 2)
 		{
-			cout << "too few argument after -p" << endl;
+			cerr <<ERR_COL "too few argument after -p" NOR_COL<< endl;
 			return 1;
 		}
 
@@ -37,20 +37,20 @@ while (i < argc)
 		// checking if the arguments after -S are less than required
 		if (argc-i-1 < 2)
 		{
-			cout << "too few argument after -s" << endl;
+			cerr <<ERR_COL "too few argument after -s" NOR_COL<< endl;
 			return 1;
 		}
 
 		BUTTON_WIDTH = atoi(argv[i+1]);
 		if (BUTTON_WIDTH == 0) // if the input was string this cindition will be true
 		{
-			cout << argv[i+1] << " is not a valid input" << endl;
+			cerr <<ERR_COL << argv[i+1] << " is not a valid input" NOR_COL<< endl;
 			return 1;
 		}
 		BUTTON_HIEGHT = atoi(argv[i+2]);
 		if (BUTTON_HIEGHT == 0) // if the input was string this cindition will be true
 		{
-			cout << argv[i+2] << " is not a valid input(second)" << endl;
+			cerr <<ERR_COL << argv[i+2] << " is not a valid input(second)" NOR_COL<< endl;
 			return 1;
 		}
 		i+=2;
@@ -59,20 +59,20 @@ while (i < argc)
 		// checking if the arguments after -S are less than required
 		if (argc-i-1 < 2)
 		{
-			cout << "too few argument after -S" << endl;
+			cerr <<ERR_COL "too few argument after -S" NOR_COL<< endl;
 			return 1;
 		}
 
 		MOUSE_WIDTH = atoi(argv[i+1]);
 		if (MOUSE_WIDTH == 0) // if the input was string this cindition will be true
 		{
-			cout << argv[i+1] << " is not a valid input" << endl;
+			cerr <<ERR_COL << argv[i+1] << " is not a valid input" NOR_COL<< endl;
 			return 1;
 		}
 		MOUSE_HIEGHT = atoi(argv[i+2]);
 		if (MOUSE_HIEGHT == 0) // if the input was string this cindition will be true
 		{
-			cout << argv[i+2] << " is not a valid input(second)" << endl;
+			cerr <<ERR_COL << argv[i+2] << " is not a valid input" NOR_COL<< endl;
 			return 1;
 		}
 		i+=2;
@@ -81,11 +81,11 @@ while (i < argc)
 		SHOW_BORDERS = false;
 
 	} else if (arg_current == "-i") {
-		cout << "the -i for entering the keyboard file has been removed. becuase it will automatically find the file." << endl;
+		cout <<WARN_COL "the -i for entering the keyboard file has been removed. becuase it will automatically find the file." NOR_COL<< endl;
 		i++;
 
 	} else if (arg_current == "-I") {
-		cout << "the -I for entering the mouse file has been removed. becuase it will automatically find the file." << endl;
+		cout <<WARN_COL "the -I for entering the mouse file has been removed. becuase it will automatically find the file." NOR_COL<< endl;
 		i++;
 
 	} else if (arg_current == "-c") {
@@ -116,11 +116,11 @@ while (i < argc)
 		CONFIG_GUI = false;
 
 	} else if (arg_current == "-r") {
-		cout << "the -r flag for defining the refresh time has been removed. now it will refresh automatically" << endl;
+		cout <<WARN_COL "the -r flag for defining the refresh time has been removed. now it will refresh automatically" NOR_COL<< endl;
 		i++;
 
 	} else {
-		cout << "argument:" << arg_current << " is not an allowable argument\nhere is the manual to see the allowable argument\n" << endl;
+		cerr <<ERR_COL "argument:" << arg_current << " is not an allowable argument\nhere is the manual to see the allowable argument\n" NOR_COL<< endl;
 		print_help();
 	}
 	i++;
@@ -128,6 +128,6 @@ while (i < argc)
 
 if (!SHOW_CTRL && !SHOW_SHIFT && !SHOW_SUPER && !SHOW_ALT && !SHOW_LETTERS && !SHOW_MOUSE)
 {
-	cout << "you turned of both mouse and keyboard. what do you want to see" << endl;
+	cerr <<ERR_COL "you turned of both mouse and keyboard. what do you want to see" NOR_COL<< endl;
 	return 0;
 }
