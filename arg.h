@@ -7,7 +7,6 @@ while (i < argc)
 	string arg_current = argv[i];
 	if (arg_current == "-h" || arg_current == "--help") {
 		print_help();
-		i++;
 	} else if (arg_current == "-p") {
 		// checking if the arguments after -p are less than required
 		if (argc-i-1 < 2)
@@ -32,8 +31,8 @@ while (i < argc)
 			POS_BUTTOM = true;
 		else 
 			Y = atoi(argv[i+1]);
+		i+=2;
 
-		i+=3;
 	} else if (arg_current == "-s") {
 		// checking if the arguments after -S are less than required
 		if (argc-i-1 < 2)
@@ -54,8 +53,7 @@ while (i < argc)
 			cout << argv[i+2] << " is not a valid input(second)" << endl;
 			return 1;
 		}
-
-		i+=3;
+		i+=2;
 
 	} else if (arg_current == "-S") {
 		// checking if the arguments after -S are less than required
@@ -77,36 +75,29 @@ while (i < argc)
 			cout << argv[i+2] << " is not a valid input(second)" << endl;
 			return 1;
 		}
-
-		i+=3;
+		i+=2;
 
 	} else if (arg_current == "-b") {
 		SHOW_BORDERS = false;
-		i++;
 
 	} else if (arg_current == "-i") {
 		cout << "the -i for entering the keyboard file has been removed. becuase it will automatically find the file." << endl;
-		i+=2;
+		i++;
 
 	} else if (arg_current == "-I") {
 		cout << "the -I for entering the mouse file has been removed. becuase it will automatically find the file." << endl;
-		i+=2;
+		i++;
 
 	} else if (arg_current == "-c") {
 		SHOW_CTRL = false;
-		i++;
 	} else if (arg_current == "-f") {
 		SHOW_SHIFT = false;
-		i++;
 	} else if (arg_current == "-t") {
 		SHOW_SUPER = false;
-		i++;
 	} else if (arg_current == "-a") {
 		SHOW_ALT = false;
-		i++;
 	} else if (arg_current == "-g") {
 		SHOW_LETTERS = false;
-		i++;
 
 	} else if (arg_current == "-k") {
 		SHOW_KEYBOARD = false;
@@ -115,29 +106,25 @@ while (i < argc)
 		SHOW_SUPER = false;
 		SHOW_ALT = false;
 		SHOW_LETTERS = false;
-		i++;
 
 	} else if (arg_current == "-m") {
 		SHOW_MOUSE = false;
-		i++;
 
 	} else if (arg_current == "-T") {
 		TRANSPARENT_MODE = true;
-		i++;
 
 	} else if (arg_current == "-n") {
 		CONFIG_GUI = false;
-		i++;
 
 	} else if (arg_current == "-r") {
 		cout << "the -r flag for defining the refresh time has been removed. now it will refresh automatically" << endl;
-		i+=2;
+		i++;
 
 	} else {
 		cout << "argument:" << arg_current << " is not an allowable argument\nhere is the manual to see the allowable argument\n" << endl;
 		print_help();
-		i++;
 	}
+	i++;
 }
 
 if (!SHOW_KEYBOARD && !SHOW_MOUSE)
