@@ -16,9 +16,6 @@
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 
-//char KEYBOARD_FILE[2][22] =	{"/dev/input/event","/dev/input/event"};
-//char MOUSE_FILE[2][22] =	{"/dev/input/event","/dev/input/event"};
-
 int BUTTON_WIDTH =	100;
 int BUTTON_HIEGHT =	90;
 int MOUSE_WIDTH =	90;
