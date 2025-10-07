@@ -436,16 +436,16 @@ public:
 	#define edge_cl 10 // the clearance between a button and the edge of the window
 	#define col_dis 240 // the y distance to the 2nd coloum
 	#define between 30 // the space between buttons on the y axis
-	checkBox checkBox_arrays[8] {
-		{"ctrl key", edge_cl, edge_cl, true, true},
-		{"shift key", edge_cl, edge_cl+between, true, true},
-		{"super key", edge_cl, edge_cl+between*2, true, true},
-		{"alt key", edge_cl, edge_cl+between*3, true, true},
-		{"general key", edge_cl, edge_cl+between*4, true, true},
+	checkBox checkBox_arrays[] {
+		{"ctrl key", edge_cl, edge_cl, SHOW_CTRL, true},
+		{"shift key", edge_cl, edge_cl+between, SHOW_SHIFT, true},
+		{"super key", edge_cl, edge_cl+between*2, SHOW_SUPER, true},
+		{"alt key", edge_cl, edge_cl+between*3, SHOW_ALT, true},
+		{"general key", edge_cl, edge_cl+between*4, SHOW_LETTERS, true},
 
-		{"borders", col_dis, edge_cl, true, true},
-		{"mouse", col_dis, edge_cl+between, true, true},
-		{"trasparent mode", 240, edge_cl+between*2, false, true}
+		{"borders", col_dis, edge_cl, SHOW_BORDERS, true},
+		{"mouse", col_dis, edge_cl+between, SHOW_MOUSE, true},
+		{"trasparent mode", 240, edge_cl+between*2, TRANSPARENT_MODE, true}
 	};
 
 	int_input_box int_input_box_array[] {
