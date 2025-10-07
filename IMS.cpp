@@ -10,8 +10,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-//#include <string>
-//#include <thread>
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
@@ -31,7 +29,7 @@ bool SHOW_BORDERS = 	true;
 bool SHOW_KEYBOARD =	true;
 bool SHOW_MOUSE =		true;
 bool TRANSPARENT_MODE =	false;
-bool CONFIG_GUI =		false;
+bool CONFIG_GUI =		true;
 bool POS_RIGHT =		false; // when used the "-p right <something>"
 bool POS_BUTTOM =		false; // when used the "-p <something> buttom"
 bool NEED_REFRESH =		false; // to know if a refresh is needed
