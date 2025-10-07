@@ -1,6 +1,9 @@
 #define SCREEN_W 1920
 #define SCREEN_H 1080-60
 
+#define handle_few_args() cerr <<ERR_COL "too few argument after "<< arg_current << NOR_COL<< endl; return 1;
+#define handle_not_valid_arg(a) cerr <<ERR_COL  << a << " is not a valid input" << NOR_COL<< endl; return 1;
+
 i = 1;
 while (i < argc)
 {
@@ -9,11 +12,7 @@ while (i < argc)
 		print_help();
 	} else if (arg_current == "-p") {
 		// checking if the arguments after -p are less than required
-		if (argc-i-1 < 2)
-		{
-			cerr <<ERR_COL "too few argument after -p" NOR_COL<< endl;
-			return 1;
-		}
+		if (argc-i-1 < 2) {handle_few_args();}
 
 		arg_next = argv[i+1];
 		arg_next2 = argv[i+2];
@@ -23,58 +22,42 @@ while (i < argc)
 		else if (arg_next == "left")
 			X = 0;
 		else 
+		{
+			// check if the input is include a char
+			for (char c : arg_next1) { if (!isdigit(c)) {handle_not_valid_arg(arg_next1);} }
 			X = atoi(argv[i+1]);
+		}
 
 		if (arg_next2 == "top")
 			Y = 0;
 		else if (arg_next2 == "buttom")
 			POS_BUTTOM = true;
 		else 
-			Y = atoi(argv[i+1]);
+		{
+			// check if the input is include a char
+			for (char c : arg_next2) { if (!isdigit(c)) {handle_not_valid_arg(arg_next2);} }
+			Y = atoi(argv[i+2]);
+		}
 		i+=2;
 
 	} else if (arg_current == "-s") {
 		// checking if the arguments after -S are less than required
-		if (argc-i-1 < 2)
-		{
-			cerr <<ERR_COL "too few argument after -s" NOR_COL<< endl;
-			return 1;
-		}
+		if (argc-i-1 < 2) {handle_few_args();}
 
 		BUTTON_WIDTH = atoi(argv[i+1]);
-		if (BUTTON_WIDTH == 0) // if the input was string this cindition will be true
-		{
-			cerr <<ERR_COL << argv[i+1] << " is not a valid input" NOR_COL<< endl;
-			return 1;
-		}
+		if (BUTTON_WIDTH == 0) {handle_not_valid_arg(argv[i+1]);}
 		BUTTON_HIEGHT = atoi(argv[i+2]);
-		if (BUTTON_HIEGHT == 0) // if the input was string this cindition will be true
-		{
-			cerr <<ERR_COL << argv[i+2] << " is not a valid input(second)" NOR_COL<< endl;
-			return 1;
-		}
+		if (BUTTON_HIEGHT == 0) {handle_not_valid_arg(argv[i+2]);}
 		i+=2;
 
 	} else if (arg_current == "-S") {
 		// checking if the arguments after -S are less than required
-		if (argc-i-1 < 2)
-		{
-			cerr <<ERR_COL "too few argument after -S" NOR_COL<< endl;
-			return 1;
-		}
+		if (argc-i-1 < 2) {handle_few_args();}
 
 		MOUSE_WIDTH = atoi(argv[i+1]);
-		if (MOUSE_WIDTH == 0) // if the input was string this cindition will be true
-		{
-			cerr <<ERR_COL << argv[i+1] << " is not a valid input" NOR_COL<< endl;
-			return 1;
-		}
+		if (MOUSE_WIDTH == 0) {handle_not_valid_arg(argv[i+1]);}
 		MOUSE_HIEGHT = atoi(argv[i+2]);
-		if (MOUSE_HIEGHT == 0) // if the input was string this cindition will be true
-		{
-			cerr <<ERR_COL << argv[i+2] << " is not a valid input" NOR_COL<< endl;
-			return 1;
-		}
+		if (MOUSE_HIEGHT == 0) {handle_not_valid_arg(argv[i+2]);}
 		i+=2;
 
 	} else if (arg_current == "-b") {
@@ -120,7 +103,7 @@ while (i < argc)
 		i++;
 
 	} else {
-		cerr <<ERR_COL "argument:" << arg_current << " is not an allowable argument\nhere is the manual to see the allowable argument\n" NOR_COL<< endl;
+		cerr <<ERR_COL "argument:" << arg_current << " is not an allowable argument\nhere is the manual to see the allowable arguments\n" NOR_COL<< endl;
 		print_help();
 	}
 	i++;
