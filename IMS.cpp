@@ -1012,7 +1012,6 @@ int main(int argc, char* argv[]) {
 						if (PRESSED_MOUSE[2])
 							RenderCustom(tex_mouse_wheelP, &rect_mouse);
 				}
-
 			}
 		}
 		if (NEED_REFRESH)
