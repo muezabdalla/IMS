@@ -85,50 +85,10 @@ while (i < argc)
 		i++;
 
 	} else if (arg_current == "-i") {
-		// checking if the arguments after -i are less than required
-		if (argc-i-1 < 1)
-		{
-			cout << "too few argument after -i" << endl;
-			return 1;
-		}
-		arg_next = argv[i+1];
-		if (arg_next.size() > 21)
-		{
-			cout << "this input file path is very long\nare you tring to make a memory issue" << endl;
-			return 1;
-		}
-
-		strcpy(KEYBOARD_FILE[0], arg_next.c_str());
-
-		if (!std::filesystem::exists(KEYBOARD_FILE[0]))
-		{
-			cout << "file " << KEYBOARD_FILE[0] << " does not exist" << endl;
-			return 1;
-		}
-		i+=2;
+		cout << "the -i for entering the keyboard file has been removed. becuase it will automatically find the file." << endl;
 
 	} else if (arg_current == "-I") {
-		// checking if the arguments after -I are less than required
-		if (argc-i-1 < 1)
-		{
-			cout << "too few argument after -I" << endl;
-			return 1;
-		}
-		arg_next = argv[i+1];
-		if (arg_next.size() > 21)
-		{
-			cout << "this input file path is very long\nare you tring to make a memory issue" << endl;
-			return 1;
-		}
-
-		strcpy(MOUSE_FILE[0], arg_next.c_str());
-
-		if (!std::filesystem::exists(MOUSE_FILE[0]))
-		{
-			cout << "file " << MOUSE_FILE[0] << " does not exist" << endl;
-			return 1;
-		}
-		i+=2;
+		cout << "the -I for entering the mouse file has been removed. becuase it will automatically find the file." << endl;
 
 	} else if (arg_current == "-c") {
 		SHOW_CTRL = false;

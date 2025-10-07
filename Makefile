@@ -8,7 +8,7 @@ TARGET = IMS
 PREFIX = /usr/local
 
 IMS: $(SRC)
-	$(CXX) $(SRC) -o $(TARGET) $(LIBS) 
+	$(CXX) $(SRC) -o $(TARGET) $(LIBS) `pkg-config --cflags --libs libudev libinput`
 
 clean :
 	rm $(TARGET)
