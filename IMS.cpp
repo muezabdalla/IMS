@@ -18,7 +18,6 @@ int BUTTON_WIDTH =	100;
 int BUTTON_HIEGHT =	90;
 int MOUSE_WIDTH =	90;
 int MOUSE_HIEGHT =	90;
-int REFRESH_TIME =	50;
 
 bool SHOW_CTRL =		true;
 bool SHOW_SHIFT =		true;

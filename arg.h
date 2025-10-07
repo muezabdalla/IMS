@@ -86,9 +86,11 @@ while (i < argc)
 
 	} else if (arg_current == "-i") {
 		cout << "the -i for entering the keyboard file has been removed. becuase it will automatically find the file." << endl;
+		i+=2;
 
 	} else if (arg_current == "-I") {
 		cout << "the -I for entering the mouse file has been removed. becuase it will automatically find the file." << endl;
+		i+=2;
 
 	} else if (arg_current == "-c") {
 		SHOW_CTRL = false;
@@ -128,12 +130,7 @@ while (i < argc)
 		i++;
 
 	} else if (arg_current == "-r") {
-		REFRESH_TIME = atoi(argv[i+1]);
-		if (REFRESH_TIME <= 0)
-		{
-			cout << argv[i+1] << " is not a valid number write an integer bigger than 0 (recommended 50-200)" << endl;
-			return 0;
-		}
+		cout << "the -r flag for defining the refresh time has been removed. now it will refresh automatically" << endl;
 		i+=2;
 
 	} else {

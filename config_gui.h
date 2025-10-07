@@ -460,8 +460,6 @@ public:
 		// window position
 		{"position x                ", col_dis, edge_cl+between*5, true, X},
 		{"position y                ", col_dis, edge_cl+between*6, true, Y},
-
-		{"refresh time (miliseconds)", col_dis, edge_cl+between*7, true, REFRESH_TIME}
 	};
 
 	button cancel ("cancel", 600-edge_cl-char_width*6-clearanceX*2, edge_cl+between*8, true);
@@ -484,7 +482,7 @@ public:
 
 			start.handle_input(&sdl_input);
 			cancel.handle_input(&sdl_input);
-			for (int i=0;i<7;i++)
+			for (int i=0;i<6;i++)
 				int_input_box_array[i].handle_input(&sdl_input);
 
 			if (start.state == 3)
@@ -497,7 +495,7 @@ public:
 				SDL_RenderClear(renderer);
 				for (int i=0;i<8;i++)
 					checkBox_arrays[i].draw(true);
-				for (int i=0;i<7;i++)
+				for (int i=0;i<6;i++)
 					int_input_box_array[i].draw(true);
 				start.draw();
 				cancel.draw();
@@ -520,7 +518,6 @@ public:
 	MOUSE_HIEGHT = stoi(int_input_box_array[3].input_num);
 	X = stoi(int_input_box_array[4].input_num);
 	Y = stoi(int_input_box_array[5].input_num);
-	REFRESH_TIME = stoi(int_input_box_array[6].input_num);
 
 	SDL_DestroyWindow(window);
 

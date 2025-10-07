@@ -28,15 +28,6 @@ this defines the size of the mouse. num1 is the length along x cordinate(horizan
 and num2 is the length along y cordinate(vertical)(the hieght)
 for example "-S 100 60" will make the mouse width 100 and hieght 60 pixels
 .TP
-.BI \-i " /path/to/file"
-this will make the program read from the specified keyboard file instead of the defualt
-if the program does not detect any key press that means the keyboard input file is differant for your system
-you can know the keyboard input file by running "cat /dev/input/event5" and press a key in the keyboard if there is an output 
-that mean this is the right file else try another file
-.TP
-.BI \-I " /path/to/file"
-same as the -i flag but for the mouse file
-.TP
 .BI \-b
 turn off the borders of the window
 .TP
@@ -60,9 +51,6 @@ turn off all the keyboard
 .TP
 .BI \-m
 turn off the mouse
-.TP
-.BI \-r " <num>"
-change the refresh time (the time between refresh in miliseconds)
 .TP
 .BI \-n
 start the app directly without configuration panel
