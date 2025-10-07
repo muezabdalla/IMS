@@ -24,7 +24,7 @@ while (i < argc)
 		else 
 		{
 			// check if the input is include a char
-			for (char c : arg_next1) { if (!isdigit(c)) {handle_not_valid_arg(arg_next1);} }
+			for (char c : arg_next) { if (!isdigit(c)) {handle_not_valid_arg(arg_next);} }
 			X = atoi(argv[i+1]);
 		}
 
