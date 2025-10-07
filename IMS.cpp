@@ -25,7 +25,6 @@ bool SHOW_SUPER =		true;
 bool SHOW_ALT =			true;
 bool SHOW_LETTERS =		true;
 bool SHOW_BORDERS = 	true;
-bool SHOW_KEYBOARD =	true;
 bool SHOW_MOUSE =		true;
 bool TRANSPARENT_MODE =	false;
 bool CONFIG_GUI =		true;
@@ -476,7 +475,7 @@ int main(int argc, char* argv[]) {
 	SDL_SetRenderDrawColor(renderer, BG_COLOR_R, BG_COLOR_G, BG_COLOR_B, BG_COLOR_A);
 	SDL_RenderClear(renderer);
 
-	if (SHOW_KEYBOARD)
+	if (SHOW_CTRL || SHOW_SHIFT || SHOW_SUPER || SHOW_ALT || SHOW_LETTERS)
 	{
 		imageToTexture(find_file("button.png"), tex_general);
 		imageToTexture(find_file("buttonP.png"), tex_generalP);

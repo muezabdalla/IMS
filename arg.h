@@ -100,7 +100,6 @@ while (i < argc)
 		SHOW_LETTERS = false;
 
 	} else if (arg_current == "-k") {
-		SHOW_KEYBOARD = false;
 		SHOW_CTRL = false;
 		SHOW_SHIFT = false;
 		SHOW_SUPER = false;
@@ -127,7 +126,7 @@ while (i < argc)
 	i++;
 }
 
-if (!SHOW_KEYBOARD && !SHOW_MOUSE)
+if (!SHOW_CTRL && !SHOW_SHIFT && !SHOW_SUPER && !SHOW_ALT && !SHOW_LETTERS && !SHOW_MOUSE)
 {
 	cout << "you turned of both mouse and keyboard. what do you want to see" << endl;
 	return 0;
