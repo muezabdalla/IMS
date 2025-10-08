@@ -65,7 +65,7 @@ to run it:
 ./IMS
 ```
 
-## common issues:
+## configuration:
 
 you can change the images of the buttons if you put an them in `~/.config/IMS/` and you should name them as fellow:
 - button.png (the image of the button unpressed)
