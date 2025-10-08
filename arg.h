@@ -8,7 +8,6 @@ renderer = SDL_CreateRenderer(window, 3, 0);
 int SCREEN_W, SCREEN_H;
 // then get the size of the maximized window(or renderer to be accurate)
 SDL_GetRendererOutputSize(renderer, &SCREEN_W, &SCREEN_H);
-cout << "w:" << SCREEN_W << " h:" << SCREEN_H << endl;
 
 
 i = 1;
