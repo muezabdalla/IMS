@@ -31,19 +31,20 @@ then run it:
 - SDL2-devel
 - SDL2_image-devel
 - SDL2_ttf-devel
+- libinput-devel
 - gcc (only for compilation)
 - make (only for compilation)
 
 installing dependancies on void linux:
 
 ```
-sudo xbps-install SDL2-devel SDL2_image-devel SDL2_ttf-devel make gcc
+sudo xbps-install SDL2-devel SDL2_image-devel SDL2_ttf-devel libinput-devel make gcc
 ```
 
 installing dependancies on debian-based linux:
 
 ```
-sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev make gcc
+sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libinput-dev make gcc
 ```
 
 after installing the dependancies, download the repository and `cd` into it and run this command to build from source:
@@ -73,8 +74,6 @@ you can change the images of the buttons if you put an them in `~/.config/IMS/` 
 
 ## common issues:
 
-- if it does not show effect when you click that means you should change the input file by using -i flag. this is becouse the input file for your keyboard file might be differant so check the event file in your `/dev/input/eventX' where X might be any number.
-for example if you want to check `/dev/input/event2` then run `cat /dev/input/event2` then click any key on the keyboard if there is an output it means that this is the keyboard input file else try another file.
 - if when you use `cat /dev/input/event0` you get authentication failed or something like that. then you have two options. first: run the program as root (not recommended) second: add yourself to the input group using this command:
 
 ```

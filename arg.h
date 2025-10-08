@@ -1,8 +1,15 @@
-#define SCREEN_W 1920
-#define SCREEN_H 1080-60
-
 #define handle_few_args() cerr <<ERR_COL "too few argument after "<< arg_current << NOR_COL<< endl; return 1;
 #define handle_not_valid_arg(a) cerr <<ERR_COL  << a << " is not a valid input" << NOR_COL<< endl; return 1;
+
+// to get the size of the screen we will create a window then maximize it
+window = SDL_CreateWindow("maximized window", 100, 100, 600, 300, SDL_WINDOW_UTILITY);
+SDL_MaximizeWindow(window);
+renderer = SDL_CreateRenderer(window, 3, 0);
+int SCREEN_W, SCREEN_H;
+// then get the size of the maximized window(or renderer to be accurate)
+SDL_GetRendererOutputSize(renderer, &SCREEN_W, &SCREEN_H);
+cout << "w:" << SCREEN_W << " h:" << SCREEN_H << endl;
+
 
 i = 1;
 while (i < argc)
@@ -114,3 +121,4 @@ if (!SHOW_CTRL && !SHOW_SHIFT && !SHOW_SUPER && !SHOW_ALT && !SHOW_LETTERS && !S
 	cerr <<ERR_COL "you turned of both mouse and keyboard. what do you want to see" NOR_COL<< endl;
 	return 0;
 }
+SDL_DestroyWindow(window);
