@@ -353,6 +353,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	} 
 
+	
 	current_path = argv[0];
 	// remove last seven chars(IMS) by subtracting totall length - 3
 	while (current_path.back() != '/')
@@ -381,6 +382,11 @@ int main(int argc, char* argv[]) {
 		#include "quit.h" // clear things and exit
 	}
 
+	string session_type = getenv("XDG_SESSION_TYPE"); // get the home directory in linux
+	if (session_type == "wayland")
+	{
+		cout << WARN_COL "unfortunatly most wayland compositors does not support \"Always on Top\" so you have to right click on the title bar of the window and then click \"Always on Top\"" NOR_COL<< endl;
+	}
 	if (SHOW_CTRL) 
 	{
 		rect_ctrl =		{nButtons*BUTTON_WIDTH, 0, BUTTON_WIDTH, BUTTON_HIEGHT}; 
@@ -577,19 +583,19 @@ int main(int argc, char* argv[]) {
     struct udev *Sudev = udev_new();
 	if (Sudev == NULL)
 	{
-		cerr << ERR_COL "error creating new udev" NOR_COL;
+		cerr << ERR_COL "error creating new udev" NOR_COL << endl;
 		#include "quit.h"
 	}
     struct libinput *linput = libinput_udev_create_context(&linterface, NULL, Sudev);
 	if (linput == NULL)
 	{
-		cerr << ERR_COL "error creating libinput context" NOR_COL;
+		cerr << ERR_COL "error creating libinput context" NOR_COL << endl;
 		#include "quit.h"
 	}
 
     if (libinput_udev_assign_seat(linput, "seat0") == -1)
 	{
-		cerr << ERR_COL "error assigning the seat" NOR_COL;
+		cerr << ERR_COL "error assigning the seat" NOR_COL << endl;
 		#include "quit.h"
 	}
 
