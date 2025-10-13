@@ -575,9 +575,24 @@ int main(int argc, char* argv[]) {
         .close_restricted = close_callback,
     };
     struct udev *Sudev = udev_new();
+	if (Sudev == NULL)
+	{
+		cerr << ERR_COL "error creating new udev" NOR_COL;
+		#include "quit.h"
+	}
     struct libinput *linput = libinput_udev_create_context(&linterface, NULL, Sudev);
+	if (linput == NULL)
+	{
+		cerr << ERR_COL "error creating libinput context" NOR_COL;
+		#include "quit.h"
+	}
 
-    libinput_udev_assign_seat(linput, "seat0");
+    if (libinput_udev_assign_seat(linput, "seat0") == -1)
+	{
+		cerr << ERR_COL "error assigning the seat" NOR_COL;
+		#include "quit.h"
+	}
+
 
     struct pollfd pfd = {
         .fd = libinput_get_fd(linput),
