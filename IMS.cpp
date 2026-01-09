@@ -334,7 +334,6 @@ string find_file(string file_name)
 
 int open_callback(const char *path, int flags, void *user_data)
 {
-    //return open(path, flags);
 	int fd = open(path, flags);
 	if (fd == -1)
 	{
@@ -361,7 +360,7 @@ bool close_program = false; // if set to true the loop exit (to close the app)
 
 int main(int argc, char* argv[]) {
 
-	//SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
+	SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
 	if ( SDL_Init( SDL_INIT_EVENTS ) < 0 ) {
 		cerr <<ERR_COL "Error initializing SDL: " << SDL_GetError() << NOR_COL<< endl;
 		return 1;
