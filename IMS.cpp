@@ -334,7 +334,21 @@ string find_file(string file_name)
 
 int open_callback(const char *path, int flags, void *user_data)
 {
-    return open(path, flags);
+    //return open(path, flags);
+	int fd = open(path, flags);
+	if (fd == -1)
+	{
+		cerr << ERR_COL;
+		switch (errno)
+		{
+			case EACCES: cerr << "Error accessing the input files: make sure you are in the input group by running \"usermod -a -G input username\" and then restarting the computer"; break;
+			case ENOMEM: cerr << "Error no enough memory for accessing the file"; break;
+			defualt: cerr << "Error opening the input file";
+		}
+		cerr << NOR_COL << endl;
+		exit(1);
+	}
+	return fd;
 }
 
 void close_callback(int fd, void *user_data)
@@ -347,7 +361,7 @@ bool close_program = false; // if set to true the loop exit (to close the app)
 
 int main(int argc, char* argv[]) {
 
-	SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
+	//SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
 	if ( SDL_Init( SDL_INIT_EVENTS ) < 0 ) {
 		cerr <<ERR_COL "Error initializing SDL: " << SDL_GetError() << NOR_COL<< endl;
 		return 1;
