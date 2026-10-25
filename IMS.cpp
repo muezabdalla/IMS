@@ -318,7 +318,7 @@ void print_help()
 	if (filesystem::is_regular_file(current_path+"IMS.1"))
 		system(("man -c "+current_path+"IMS.1").c_str());
 	else
-		system("man IMS");
+		system("man -c IMS");
 	exit(0);
 }
 // to find if a file (image or font) is in ~/config/IMS/ or /usr/shar/IMS/ or ./resources/
