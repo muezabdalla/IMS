@@ -1,3 +1,5 @@
+> [!CAUTION]
+> IMS have moved to codeberg here [IMS](https://codeberg.org/muez_abdalla/IMS).
 # IMS (Input Monitoring System)
 
 ![preview when clicked](./screenshots/example.png "image")
